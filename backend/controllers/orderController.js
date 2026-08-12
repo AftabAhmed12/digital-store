@@ -3,6 +3,7 @@ import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { orderDeliveryTemplate } from "../utils/emailTemplate.js";
+import { buildDownloadUrl } from "../utils/downloadUrl.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -116,7 +117,7 @@ export const fulfillOrder = async (session) => {
   const html = orderDeliveryTemplate({
     customerEmail: order.customerEmail,
     productTitle: order.productTitle,
-    downloadUrl: product.digitalFile.url,
+    downloadUrl: buildDownloadUrl(product),
     amount: order.amount,
     currency: order.currency,
   });
@@ -168,7 +169,7 @@ export const resendOrderEmail = async (req, res) => {
   const html = orderDeliveryTemplate({
     customerEmail: order.customerEmail,
     productTitle: order.productTitle,
-    downloadUrl: product.digitalFile.url,
+    downloadUrl: buildDownloadUrl(product),
     amount: order.amount,
     currency: order.currency,
   });
