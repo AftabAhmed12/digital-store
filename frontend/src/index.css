@@ -61,6 +61,21 @@
   }
 }
 
+/* Gentle floating motion for the social icons (outer wrapper animates,
+   so inner hover effects like lift/glow still work independently). */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
 @layer components {
   .input {
     @apply w-full bg-ink border border-border rounded-lg px-4 py-3 text-sm focus:border-gold outline-none;

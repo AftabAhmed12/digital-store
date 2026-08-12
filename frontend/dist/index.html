@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vaultly — Digital Products, Delivered Instantly</title>
+    <meta name="description" content="Buy digital products instantly — no account needed. Delivered straight to your inbox." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+    <script>
+      // Applied before React mounts so the correct theme shows on first paint (no flash)
+      (function () {
+        try {
+          var stored = localStorage.getItem("vaultly-theme");
+          var theme = stored === "light" || stored === "dark"
+            ? stored
+            : (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-BGmXSM5s.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-D38B4WOD.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

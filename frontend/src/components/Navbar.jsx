@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle.jsx";
 
@@ -52,6 +52,7 @@ export default function Navbar() {
 function MobileMenu() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const touchStart = useRef(null);
 
   // Close automatically whenever the route changes (covers link clicks,
   // back/forward navigation, programmatic redirects — not just onClick)
@@ -67,8 +68,52 @@ function MobileMenu() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
+  // Close when the page scrolls while the menu is left open — any vertical
+  // movement past a small threshold dismisses it with the existing transition.
+  useEffect(() => {
+    if (!open) return;
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      if (Math.abs(window.scrollY - lastY) > 8) {
+        setOpen(false);
+      }
+      lastY = window.scrollY;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [open]);
+
+  // Close on slide/swipe gesture — any dominant swipe past the threshold
+  // (swipe down, swipe right, swipe left) dismisses the menu like a sheet.
+  // Uses pointer events so it works for both touch and mouse drag.
+  const onPointerDown = (e) => {
+    if (!open) return;
+    touchStart.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const onPointerMove = (e) => {
+    if (!open || !touchStart.current) return;
+    const dx = e.clientX - touchStart.current.x;
+    const dy = e.clientY - touchStart.current.y;
+    const dominant = Math.abs(dy) > Math.abs(dx) ? dy : dx;
+    if (Math.abs(dominant) > 48) {
+      touchStart.current = null;
+      setOpen(false);
+    }
+  };
+
+  const onPointerUp = () => {
+    touchStart.current = null;
+  };
+
   return (
-    <div className="md:hidden relative">
+    <div
+      className="md:hidden relative"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerLeave={onPointerUp}
+    >
       <button
         onClick={() => setOpen((prev) => !prev)}
         aria-label={open ? "Close menu" : "Open menu"}
@@ -105,6 +150,12 @@ function MobileMenu() {
             : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
         }`}
       >
+        {/* Drag handle hint — swipe to dismiss */}
+        <span
+          className={`block w-8 h-1 mx-auto mt-1 rounded-full bg-border transition-opacity ${
+            open ? "opacity-100" : "opacity-0"
+          }`}
+        />
         {navItems.map((item) => (
           <Link
             key={item.to}

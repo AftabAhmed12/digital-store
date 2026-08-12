@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../api/axios.js";
 import ProductCard from "../components/ProductCard.jsx";
 import Loader from "../components/Loader.jsx";
+import SocialLinks from "../components/SocialLinks.jsx";
 
 export default function Home() {
   const [featured, setFeatured] = useState([]);
@@ -76,6 +77,9 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      {/* Social links */}
+      <SocialLinks />
     </div>
   );
 }
