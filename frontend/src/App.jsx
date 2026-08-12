@@ -21,6 +21,7 @@ import AdminProductForm from "./pages/admin/AdminProductForm.jsx";
 import AdminBlogs from "./pages/admin/AdminBlogs.jsx";
 import AdminBlogForm from "./pages/admin/AdminBlogForm.jsx";
 import AdminOrders from "./pages/admin/AdminOrders.jsx";
+import AdminAbandoned from "./pages/admin/AdminAbandoned.jsx";
 
 function PublicLayout({ children }) {
   return (
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="blogs/new" element={<AdminBlogForm />} />
         <Route path="blogs/:id/edit" element={<AdminBlogForm />} />
         <Route path="orders" element={<AdminOrders />} />
+        <Route path="cancelled" element={<AdminAbandoned />} />
       </Route>
 
       <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />

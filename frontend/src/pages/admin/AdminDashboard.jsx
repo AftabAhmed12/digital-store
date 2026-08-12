@@ -80,6 +80,7 @@ export function StatusBadge({ status }) {
     email_sent: "bg-teal/10 text-teal",
     email_failed: "bg-red-500/10 text-red-400",
     failed: "bg-red-500/10 text-red-400",
+    cancelled: "bg-yellow-500/10 text-yellow-400",
   };
   return <span className={`px-2 py-1 rounded text-xs ${map[status] || ""}`}>{status}</span>;
 }

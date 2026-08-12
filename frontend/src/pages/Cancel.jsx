@@ -1,6 +1,17 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import api from "../api/axios.js";
 
 export default function Cancel() {
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("session_id");
+
+  useEffect(() => {
+    if (sessionId) {
+      api.post("/orders/cancel", { sessionId }).catch(() => {});
+    }
+  }, [sessionId]);
+
   return (
     <div className="container-px max-w-xl mx-auto py-24 text-center">
       <h1 className="font-display font-700 text-3xl mb-3">Checkout cancelled</h1>
