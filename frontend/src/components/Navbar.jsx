@@ -1,4 +1,5 @@
-import { Link, NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle.jsx";
 
 const navItems = [
@@ -49,18 +50,66 @@ export default function Navbar() {
 }
 
 function MobileMenu() {
+  const [open, setOpen] = useState(false);
+  const location = useLocation();
+
+  // Close automatically whenever the route changes (covers link clicks,
+  // back/forward navigation, programmatic redirects — not just onClick)
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
+
+  // Close on Escape for keyboard users
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
   return (
-    <details className="md:hidden relative">
-      <summary className="list-none cursor-pointer p-2 text-text-primary">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M3 6h18M3 12h18M3 18h18" />
-        </svg>
-      </summary>
-      <div className="absolute right-0 top-12 w-48 bg-surface border border-border rounded-lg shadow-xl py-2">
+    <div className="md:hidden relative">
+      <button
+        onClick={() => setOpen((prev) => !prev)}
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
+        className="p-2 text-text-primary relative w-8 h-8 flex items-center justify-center"
+      >
+        {/* Hamburger <-> X, animated via rotation/opacity rather than an abrupt swap */}
+        <span
+          className={`absolute block w-5 h-0.5 bg-current transition-transform duration-300 ease-out ${
+            open ? "rotate-45" : "-translate-y-1.5"
+          }`}
+        />
+        <span
+          className={`absolute block w-5 h-0.5 bg-current transition-opacity duration-200 ease-out ${
+            open ? "opacity-0" : "opacity-100"
+          }`}
+        />
+        <span
+          className={`absolute block w-5 h-0.5 bg-current transition-transform duration-300 ease-out ${
+            open ? "-rotate-45" : "translate-y-1.5"
+          }`}
+        />
+      </button>
+
+      {/* Backdrop: click outside to close */}
+      {open && (
+        <div className="fixed inset-0 top-16 z-40" onClick={() => setOpen(false)} />
+      )}
+
+      <div
+        className={`absolute right-0 top-12 w-48 bg-surface border border-border rounded-lg shadow-xl py-2 z-50 origin-top-right transition-all duration-200 ease-out ${
+          open
+            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+        }`}
+      >
         {navItems.map((item) => (
           <Link
             key={item.to}
             to={item.to}
+            onClick={() => setOpen(false)}
             className="block px-4 py-2 text-sm text-text-muted hover:text-gold hover:bg-surface2"
           >
             {item.label}
@@ -71,6 +120,6 @@ function MobileMenu() {
           <ThemeToggle />
         </div>
       </div>
-    </details>
+    </div>
   );
 }

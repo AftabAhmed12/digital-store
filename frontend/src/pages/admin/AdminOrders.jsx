@@ -51,7 +51,7 @@ export default function AdminOrders() {
                 <td className="p-4 font-mono">${(o.amount / 100).toFixed(2)}</td>
                 <td className="p-4"><StatusBadge status={o.status} /></td>
                 <td className="p-4 text-text-faint">{new Date(o.createdAt).toLocaleDateString()}</td>
-                <td className="p-4 text-right">
+                <td className="p-4 text-right whitespace-nowrap">
                   {o.status !== "pending" && (
                     <button
                       onClick={() => handleResend(o._id)}

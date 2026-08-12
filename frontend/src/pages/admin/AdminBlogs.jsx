@@ -49,7 +49,7 @@ export default function AdminBlogs() {
                 <td className="p-4 text-text-muted capitalize">{b.category}</td>
                 <td className="p-4">{b.isPublished ? "Yes" : "No"}</td>
                 <td className="p-4 text-text-faint">{new Date(b.createdAt).toLocaleDateString()}</td>
-                <td className="p-4 text-right space-x-3">
+                <td className="p-4 text-right whitespace-nowrap space-x-3">
                   <Link to={`/admin/blogs/${b._id}/edit`} className="text-blue hover:underline">Edit</Link>
                   <button onClick={() => handleDelete(b._id)} className="text-red-400 hover:underline">Delete</button>
                 </td>
