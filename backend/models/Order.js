@@ -11,10 +11,11 @@ const orderSchema = new mongoose.Schema(
     stripePaymentIntentId: { type: String },
     status: {
       type: String,
-      enum: ["pending", "paid", "failed", "email_sent", "email_failed"],
+      enum: ["pending", "paid", "failed", "cancelled", "email_sent", "email_failed"],
       default: "pending",
     },
     deliveredAt: { type: Date },
+    cancelledAt: { type: Date },
   },
   { timestamps: true }
 );

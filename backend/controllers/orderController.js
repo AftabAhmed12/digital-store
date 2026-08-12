@@ -41,7 +41,7 @@ export const createCheckoutSession = async (req, res) => {
         productTitle: product.title,
       },
       success_url: `${process.env.CLIENT_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/order-cancelled`,
+      cancel_url: `${process.env.CLIENT_URL}/order-cancelled?session_id={CHECKOUT_SESSION_ID}`,
     });
 
     // Pre-create a pending order record so we can track it even before webhook fires
@@ -70,6 +70,29 @@ export const getOrderBySession = async (req, res) => {
     productTitle: order.productTitle,
     customerEmail: order.customerEmail,
   });
+};
+
+// @desc Mark a pending checkout as cancelled / abandoned.
+// Called from the "order cancelled" page so the admin can later follow up
+// with the customer (email + product + attempt time). Idempotent.
+// @route POST /api/orders/cancel
+// body: { sessionId }
+export const markOrderCancelled = async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    if (!sessionId) return res.status(400).json({ message: "sessionId is required" });
+
+    const order = await Order.findOne({ stripeSessionId: sessionId });
+    if (order && order.status === "pending") {
+      order.status = "cancelled";
+      order.cancelledAt = new Date();
+      await order.save();
+    }
+
+    res.json({ message: "Checkout recorded as cancelled" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 // This function is called from the Stripe webhook handler once payment is confirmed.
@@ -117,6 +140,15 @@ export const fulfillOrder = async (session) => {
 
 export const adminGetOrders = async (req, res) => {
   const orders = await Order.find().populate("product", "title").sort({ createdAt: -1 });
+  res.json(orders);
+};
+
+// Abandoned / cancelled checkouts — who tried to pay for what and when,
+// so the admin can approach them later. Sorted by most recent attempt.
+export const adminGetCancelledOrders = async (req, res) => {
+  const orders = await Order.find({ status: "cancelled" })
+    .populate("product", "title")
+    .sort({ createdAt: -1 });
   res.json(orders);
 };
 
