@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ink text-text-primary font-body antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+  ::selection {
+    background-color: #F2B84B;
+    color: #0B0F19;
+  }
+  *:focus-visible {
+    outline: 2px solid #F2B84B;
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .container-px {
+    @apply px-6 md:px-10 lg:px-16;
+  }
+}
+
+@layer components {
+  .input {
+    @apply w-full bg-ink border border-border rounded-lg px-4 py-3 text-sm focus:border-gold outline-none;
+  }
+}
+
+/* Rich text editor (react-quill) — restyled to match the dark theme */
+.rich-text-editor .ql-toolbar.ql-snow {
+  background-color: #131826;
+  border-color: #1E2536;
+  border-radius: 8px 8px 0 0;
+}
+.rich-text-editor .ql-container.ql-snow {
+  background-color: #0B0F19;
+  border-color: #1E2536;
+  border-radius: 0 0 8px 8px;
+  min-height: 260px;
+  font-size: 14px;
+  color: #E7E9EE;
+}
+.rich-text-editor .ql-editor {
+  min-height: 260px;
+}
+.rich-text-editor .ql-editor img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+.rich-text-editor .ql-snow .ql-stroke {
+  stroke: #B7BDC9;
+}
+.rich-text-editor .ql-snow .ql-fill {
+  fill: #B7BDC9;
+}
+.rich-text-editor .ql-snow .ql-picker {
+  color: #B7BDC9;
+}
+.rich-text-editor .ql-snow.ql-toolbar button:hover .ql-stroke,
+.rich-text-editor .ql-snow .ql-toolbar button:hover .ql-stroke {
+  stroke: #F2B84B;
+}
+.rich-text-editor .ql-snow.ql-toolbar button.ql-active .ql-stroke {
+  stroke: #F2B84B;
+}
+.rich-text-editor .ql-picker-options {
+  background-color: #131826;
+  border-color: #1E2536;
+}
+.rich-text-editor .ql-editor.ql-blank::before {
+  color: #7A8299;
+  font-style: normal;
+}
+
+/* Published blog content (BlogDetail page) — inline images from the editor */
+.prose img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+.prose a {
+  color: #F2B84B;
+  text-decoration: underline;
+}
+.prose h1, .prose h2, .prose h3 {
+  color: #E7E9EE;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+.prose blockquote {
+  border-left: 3px solid #38B2AC;
+  padding-left: 16px;
+  color: #B7BDC9;
+  font-style: italic;
+}
+.prose pre {
+  background-color: #131826;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
