@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
+import ChatWidget from "./components/ChatWidget.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 import Home from "./pages/Home.jsx";
@@ -22,6 +23,7 @@ import AdminBlogs from "./pages/admin/AdminBlogs.jsx";
 import AdminBlogForm from "./pages/admin/AdminBlogForm.jsx";
 import AdminOrders from "./pages/admin/AdminOrders.jsx";
 import AdminAbandoned from "./pages/admin/AdminAbandoned.jsx";
+import AdminChatLeads from "./pages/admin/AdminChatLeads.jsx";
 
 function PublicLayout({ children }) {
   return (
@@ -29,6 +31,7 @@ function PublicLayout({ children }) {
       <Navbar />
       <main className="min-h-[70vh]">{children}</main>
       <Footer />
+      <ChatWidget />
     </>
   );
 }
@@ -65,6 +68,7 @@ export default function App() {
         <Route path="blogs/:id/edit" element={<AdminBlogForm />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="cancelled" element={<AdminAbandoned />} />
+        <Route path="leads" element={<AdminChatLeads />} />
       </Route>
 
       <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
