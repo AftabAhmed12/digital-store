@@ -1,4 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
+import ThemeToggle from "./ThemeToggle.jsx";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -32,14 +33,16 @@ export default function Navbar() {
           ))}
         </div>
 
-        <Link
-          to="/products"
-          className="hidden md:inline-flex items-center bg-gold text-ink text-sm font-semibold px-4 py-2 rounded-lg hover:brightness-110 transition"
-        >
-          Browse Products
-        </Link>
-
-        <MobileMenu />
+        <div className="flex items-center gap-3">
+          <ThemeToggle className="hidden md:flex" />
+          <Link
+            to="/products"
+            className="hidden md:inline-flex items-center bg-gold text-ink text-sm font-semibold px-4 py-2 rounded-lg hover:brightness-110 transition"
+          >
+            Browse Products
+          </Link>
+          <MobileMenu />
+        </div>
       </nav>
     </header>
   );
@@ -63,6 +66,10 @@ function MobileMenu() {
             {item.label}
           </Link>
         ))}
+        <div className="border-t border-border mt-2 pt-2 px-4 flex items-center justify-between">
+          <span className="text-xs text-text-faint">Theme</span>
+          <ThemeToggle />
+        </div>
       </div>
     </details>
   );

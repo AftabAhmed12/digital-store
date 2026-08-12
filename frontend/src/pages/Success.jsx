@@ -33,7 +33,7 @@ export default function Success() {
   return (
     <div className="container-px max-w-xl mx-auto py-24 text-center">
       <div className="w-16 h-16 rounded-full bg-teal/10 border border-teal/40 flex items-center justify-center mx-auto mb-6">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38B2AC" strokeWidth="2">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-teal">
           <path d="M20 6 9 17l-5-5" />
         </svg>
       </div>

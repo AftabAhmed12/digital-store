@@ -2,22 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============ THEME TOKENS ============
+   Both themes share the same "premium vault" identity (navy/ink + gold + teal
+   accents) — light mode is not a generic gray/white flip, it's a warm ivory
+   "paper & gold" palette so the brand still feels distinctive in daylight. */
+
+:root,
+[data-theme="dark"] {
+  --color-ink: 11 15 25;             /* #0B0F19 */
+  --color-surface: 19 24 38;         /* #131826 */
+  --color-surface2: 27 36 54;        /* #1B2436 */
+  --color-border: 30 37 54;          /* #1E2536 */
+  --color-text-primary: 231 233 238; /* #E7E9EE */
+  --color-text-muted: 183 189 201;   /* #B7BDC9 */
+  --color-text-faint: 122 130 153;   /* #7A8299 */
+  --color-gold: 242 184 75;          /* #F2B84B */
+  --color-teal: 56 178 172;          /* #38B2AC */
+  --color-blue: 91 141 239;          /* #5B8DEF */
+}
+
+[data-theme="light"] {
+  --color-ink: 250 248 244;          /* #FAF8F4 warm ivory background */
+  --color-surface: 255 255 255;      /* #FFFFFF cards pop against ivory */
+  --color-surface2: 244 239 230;     /* #F4EFE6 soft warm secondary surface */
+  --color-border: 227 220 206;       /* #E3DCCE warm border */
+  --color-text-primary: 28 30 38;    /* #1C1E26 deep ink text */
+  --color-text-muted: 87 92 107;     /* #575C6B slate */
+  --color-text-faint: 137 141 153;   /* #898D99 */
+  --color-gold: 194 122 12;          /* #C27A0C deep amber — readable as text on ivory */
+  --color-teal: 13 130 122;          /* #0D827A deeper teal for contrast on light bg */
+  --color-blue: 33 92 209;           /* #215CD1 */
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
   }
   body {
     @apply bg-ink text-text-primary font-body antialiased;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   h1, h2, h3, h4 {
     @apply font-display;
   }
   ::selection {
-    background-color: #F2B84B;
-    color: #0B0F19;
+    background-color: rgb(var(--color-gold));
+    color: rgb(27 36 54); /* fixed dark navy — stays readable on gold in both themes */
   }
   *:focus-visible {
-    outline: 2px solid #F2B84B;
+    outline: 2px solid rgb(var(--color-gold));
     outline-offset: 2px;
   }
 }
@@ -34,19 +67,19 @@
   }
 }
 
-/* Rich text editor (react-quill) — restyled to match the dark theme */
+/* Rich text editor (react-quill) — follows the active theme via CSS variables */
 .rich-text-editor .ql-toolbar.ql-snow {
-  background-color: #131826;
-  border-color: #1E2536;
+  background-color: rgb(var(--color-surface));
+  border-color: rgb(var(--color-border));
   border-radius: 8px 8px 0 0;
 }
 .rich-text-editor .ql-container.ql-snow {
-  background-color: #0B0F19;
-  border-color: #1E2536;
+  background-color: rgb(var(--color-ink));
+  border-color: rgb(var(--color-border));
   border-radius: 0 0 8px 8px;
   min-height: 260px;
   font-size: 14px;
-  color: #E7E9EE;
+  color: rgb(var(--color-text-primary));
 }
 .rich-text-editor .ql-editor {
   min-height: 260px;
@@ -57,27 +90,27 @@
   margin: 12px 0;
 }
 .rich-text-editor .ql-snow .ql-stroke {
-  stroke: #B7BDC9;
+  stroke: rgb(var(--color-text-muted));
 }
 .rich-text-editor .ql-snow .ql-fill {
-  fill: #B7BDC9;
+  fill: rgb(var(--color-text-muted));
 }
 .rich-text-editor .ql-snow .ql-picker {
-  color: #B7BDC9;
+  color: rgb(var(--color-text-muted));
 }
 .rich-text-editor .ql-snow.ql-toolbar button:hover .ql-stroke,
 .rich-text-editor .ql-snow .ql-toolbar button:hover .ql-stroke {
-  stroke: #F2B84B;
+  stroke: rgb(var(--color-gold));
 }
 .rich-text-editor .ql-snow.ql-toolbar button.ql-active .ql-stroke {
-  stroke: #F2B84B;
+  stroke: rgb(var(--color-gold));
 }
 .rich-text-editor .ql-picker-options {
-  background-color: #131826;
-  border-color: #1E2536;
+  background-color: rgb(var(--color-surface));
+  border-color: rgb(var(--color-border));
 }
 .rich-text-editor .ql-editor.ql-blank::before {
-  color: #7A8299;
+  color: rgb(var(--color-text-faint));
   font-style: normal;
 }
 
@@ -88,22 +121,22 @@
   margin: 20px 0;
 }
 .prose a {
-  color: #F2B84B;
+  color: rgb(var(--color-gold));
   text-decoration: underline;
 }
 .prose h1, .prose h2, .prose h3 {
-  color: #E7E9EE;
+  color: rgb(var(--color-text-primary));
   margin-top: 24px;
   margin-bottom: 12px;
 }
 .prose blockquote {
-  border-left: 3px solid #38B2AC;
+  border-left: 3px solid rgb(var(--color-teal));
   padding-left: 16px;
-  color: #B7BDC9;
+  color: rgb(var(--color-text-muted));
   font-style: italic;
 }
 .prose pre {
-  background-color: #131826;
+  background-color: rgb(var(--color-surface));
   padding: 16px;
   border-radius: 8px;
   overflow-x: auto;

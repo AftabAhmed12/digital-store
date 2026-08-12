@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios.js";
+import ThemeToggle from "../../components/ThemeToggle.jsx";
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -25,7 +26,10 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-ink container-px">
+    <div className="min-h-screen flex items-center justify-center bg-ink container-px relative">
+      <div className="absolute top-6 right-6">
+        <ThemeToggle />
+      </div>
       <form onSubmit={handleSubmit} className="w-full max-w-sm bg-surface border border-border rounded-xl p-8">
         <div className="flex items-center gap-2 mb-8">
           <span className="w-2 h-2 rounded-full bg-gold" />

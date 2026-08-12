@@ -1,4 +1,5 @@
 import { Link, NavLink, useNavigate, Outlet } from "react-router-dom";
+import ThemeToggle from "../../components/ThemeToggle.jsx";
 
 const links = [
   { to: "/admin/dashboard", label: "Dashboard" },
@@ -20,10 +21,13 @@ export default function AdminLayout() {
   return (
     <div className="min-h-screen flex">
       <aside className="w-60 bg-surface border-r border-border hidden md:flex flex-col p-6">
-        <Link to="/admin/dashboard" className="flex items-center gap-2 mb-10">
-          <span className="w-2 h-2 rounded-full bg-gold" />
-          <span className="font-display font-700 text-lg">Vaultly</span>
-        </Link>
+        <div className="flex items-center justify-between mb-10">
+          <Link to="/admin/dashboard" className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-gold" />
+            <span className="font-display font-700 text-lg">Vaultly</span>
+          </Link>
+          <ThemeToggle />
+        </div>
         <nav className="flex flex-col gap-1 flex-1">
           {links.map((l) => (
             <NavLink
@@ -43,6 +47,9 @@ export default function AdminLayout() {
         </div>
       </aside>
       <main className="flex-1 bg-ink">
+        <div className="md:hidden flex justify-end p-4">
+          <ThemeToggle />
+        </div>
         <Outlet />
       </main>
     </div>
