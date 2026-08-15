@@ -40,6 +40,17 @@ export default function AdminProductForm() {
     e.target.value = ""; // allow re-selecting the same file if removed and re-added
   };
 
+  const handleDigitalFile = (e) => {
+    const file = e.target.files[0];
+    if (file && !/\.pdf$/i.test(file.name) && file.type !== "application/pdf") {
+      setError("The digital product file must be a PDF (.pdf)");
+      e.target.value = "";
+      return;
+    }
+    setDigitalFile(file);
+    setError("");
+  };
+
   const removeNewImage = (index) => {
     setNewImages((prev) => prev.filter((_, i) => i !== index));
   };
@@ -132,8 +143,14 @@ export default function AdminProductForm() {
           </div>
         )}
 
-        <Field label={`Digital product file${isEdit ? " (leave empty to keep current)" : ""}`}>
-          <input type="file" onChange={(e) => setDigitalFile(e.target.files[0])} className="input" />
+        <Field label={`Digital product file (PDF only)${isEdit ? " — leave empty to keep current" : ""}`}>
+          <input type="file" accept=".pdf,application/pdf" onChange={handleDigitalFile} className="input" />
+          {isEdit && form.digitalFile?.fileName && (
+            <p className="text-xs text-text-faint mt-2">Current file: {form.digitalFile.fileName}</p>
+          )}
+          {digitalFile && (
+            <p className="text-xs text-teal mt-2">New file: {digitalFile.name}</p>
+          )}
         </Field>
         <label className="flex items-center gap-2 text-sm text-text-muted">
           <input type="checkbox" name="isActive" checked={form.isActive} onChange={handleChange} />
