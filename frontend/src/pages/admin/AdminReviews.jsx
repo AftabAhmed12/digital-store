@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import Modal from "../../components/Modal.jsx";
+import ProductTitleLink from "../../components/ProductTitleLink.jsx";
 import { Stars } from "../../components/ProductReviews.jsx";
 
 const statusColors = {
@@ -260,7 +261,7 @@ export default function AdminReviews() {
             {reviews.map((r) => (
               <tr key={r._id} className="border-b border-border last:border-0 align-top">
                 <td className="p-4 min-w-[180px]">
-                  <p className="font-semibold">{r.productTitle}</p>
+                  <ProductTitleLink slug={r.product?.slug} title={r.productTitle} />
                   <p className="text-text-faint text-xs capitalize">{r.category || ""}</p>
                 </td>
                 <td className="p-4 min-w-[200px]">

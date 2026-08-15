@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import { StatusBadge } from "./AdminDashboard.jsx";
+import ProductTitleLink from "../../components/ProductTitleLink.jsx";
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -46,7 +47,7 @@ export default function AdminOrders() {
           <tbody>
             {orders.map((o) => (
               <tr key={o._id} className="border-b border-border last:border-0">
-                <td className="p-4">{o.productTitle}</td>
+                <td className="p-4"><ProductTitleLink slug={o.product?.slug} title={o.productTitle} /></td>
                 <td className="p-4 text-text-muted">{o.customerEmail}</td>
                 <td className="p-4 font-mono">${(o.amount / 100).toFixed(2)}</td>
                 <td className="p-4"><StatusBadge status={o.status} /></td>
