@@ -7,6 +7,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  downloadProductFile,
 } from "../controllers/productController.js";
 import { protectAdmin } from "../middleware/auth.js";
 import multer from "multer";
@@ -35,6 +36,7 @@ const router = express.Router();
 // Public
 router.get("/", getProducts);
 router.get("/categories", getCategories);
+router.get("/:id/download", downloadProductFile);
 router.get("/:slug", getProductBySlug);
 
 // Admin

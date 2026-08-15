@@ -1,5 +1,7 @@
 import Product from "../models/Product.js";
 import cloudinary from "../config/cloudinary.js";
+import https from "https";
+import { sanitizeFileName } from "../utils/downloadUrl.js";
 
 // The digital product file must always be a PDF (delivery is PDF-only)
 const isPdf = (file) => {
@@ -32,6 +34,41 @@ export const getProductBySlug = async (req, res) => {
     );
     if (!product) return res.status(404).json({ message: "Product not found" });
     res.json(product);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @desc Stream the digital file for download — always served as `<title>.pdf`.
+// Used by the email download link. Cloudinary's fl_attachment can't name raw
+// files with a .pdf extension, so we proxy the file with the right headers.
+export const downloadProductFile = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    const fileUrl = product?.digitalFile?.url;
+    if (!fileUrl) return res.status(404).json({ message: "File not found" });
+
+    const filename = `${sanitizeFileName(product.title)}.pdf`;
+
+    https
+      .get(fileUrl, (remote) => {
+        if (remote.statusCode !== 200) {
+          res.status(502).json({ message: "Failed to fetch file from storage" });
+          remote.resume();
+          return;
+        }
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+        res.setHeader("Cache-Control", "no-store");
+        remote.pipe(res);
+      })
+      .on("error", (err) => {
+        if (!res.headersSent) {
+          res.status(500).json({ message: err.message });
+        } else {
+          res.end();
+        }
+      });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
