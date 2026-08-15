@@ -1,6 +1,12 @@
 import Product from "../models/Product.js";
 import cloudinary from "../config/cloudinary.js";
 
+// The digital product file must always be a PDF (delivery is PDF-only)
+const isPdf = (file) => {
+  if (!file) return false;
+  return /\.pdf$/i.test(file.originalname || "") || file.mimetype === "application/pdf";
+};
+
 // @desc Get all active products (public) - supports ?category= & ?search=
 export const getProducts = async (req, res) => {
   try {
@@ -50,6 +56,12 @@ export const adminGetProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
+    const pdf = req.files?.digitalFile?.[0];
+    if (pdf && !isPdf(pdf)) {
+      await cloudinary.uploader.destroy(pdf.filename, { resource_type: "raw" }).catch(() => {});
+      return res.status(400).json({ message: "The digital product file must be a PDF (.pdf)" });
+    }
+
     const { title, description, shortDescription, price, category, currency } = req.body;
     const slug = title
       .toLowerCase()
@@ -117,6 +129,11 @@ export const updateProduct = async (req, res) => {
     }
 
     if (req.files?.digitalFile?.[0]) {
+      const pdf = req.files.digitalFile[0];
+      if (!isPdf(pdf)) {
+        await cloudinary.uploader.destroy(pdf.filename, { resource_type: "raw" }).catch(() => {});
+        return res.status(400).json({ message: "The digital product file must be a PDF (.pdf)" });
+      }
       if (product.digitalFile?.publicId) {
         await cloudinary.uploader.destroy(product.digitalFile.publicId, { resource_type: "raw" }).catch(() => {});
       }
