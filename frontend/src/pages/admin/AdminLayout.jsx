@@ -6,6 +6,7 @@ const links = [
   { to: "/admin/products", label: "Products" },
   { to: "/admin/blogs", label: "Blogs" },
   { to: "/admin/orders", label: "Orders" },
+  { to: "/admin/reviews", label: "Reviews" },
   { to: "/admin/cancelled", label: "Abandoned Checkouts" },
   { to: "/admin/leads", label: "Chat Leads" },
 ];

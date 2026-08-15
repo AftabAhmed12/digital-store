@@ -170,7 +170,7 @@ export default function ChatWidget() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="sarah.mitchell@gmail.com"
                 autoFocus
                 className="w-full bg-ink border border-border rounded-lg px-4 py-3 text-sm focus:border-gold outline-none"
               />

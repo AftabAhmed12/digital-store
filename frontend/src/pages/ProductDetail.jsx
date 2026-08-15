@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import api from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 import ProductGallery from "../components/ProductGallery.jsx";
+import ProductReviews from "../components/ProductReviews.jsx";
+import ProductShare from "../components/ProductShare.jsx";
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -20,6 +22,26 @@ export default function ProductDetail() {
       .catch(() => setError("Product not found"))
       .finally(() => setLoading(false));
   }, [slug]);
+
+  // Keep social-share preview tags in sync with the product (used by FB/LinkedIn/WhatsApp previews)
+  useEffect(() => {
+    if (!product) return;
+    const setMeta = (attr, key, value) => {
+      const tag = document.head.querySelector(`meta[${attr}="${key}"]`);
+      if (tag) tag.setAttribute("content", value);
+    };
+    const desc = product.shortDescription || product.description;
+    const blurb = (typeof desc === "string" ? desc : "").slice(0, 180);
+    setMeta("property", "og:title", product.title);
+    setMeta("property", "og:description", blurb);
+    setMeta("property", "og:url", window.location.href);
+    setMeta("name", "twitter:title", product.title);
+    setMeta("name", "twitter:description", blurb);
+    if (product.images?.[0]?.url) {
+      setMeta("property", "og:image", product.images[0].url);
+      setMeta("name", "twitter:image", product.images[0].url);
+    }
+  }, [product]);
 
   const handleBuy = async (e) => {
     e.preventDefault();
@@ -51,14 +73,16 @@ export default function ProductDetail() {
         <h1 className="font-display font-700 text-3xl md:text-4xl mb-4">{product.title}</h1>
         <p className="text-text-muted leading-relaxed mb-6">{product.description}</p>
 
-        <div className="flex items-baseline gap-2 mb-8">
+<div className="flex items-baseline gap-2 mb-6">
           <span className="font-mono text-gold text-3xl">
             {product.currency?.toUpperCase()} {product.price?.toFixed(2)}
           </span>
           <span className="text-text-faint text-sm">one-time payment</span>
         </div>
 
-        <form onSubmit={handleBuy} className="bg-surface border border-border rounded-xl p-6 space-y-4">
+        <ProductShare product={product} />
+
+        <form onSubmit={handleBuy} className="bg-surface border border-border rounded-xl p-6 space-y-4 mt-6">
           <div>
             <label className="block text-sm text-text-muted mb-2">Your email (for delivery)</label>
             <input
@@ -66,7 +90,7 @@ export default function ProductDetail() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="sarah.mitchell@gmail.com"
               className="w-full bg-ink border border-border rounded-lg px-4 py-3 text-sm focus:border-gold outline-none"
             />
           </div>
@@ -82,6 +106,10 @@ export default function ProductDetail() {
             Secure checkout via Stripe. Your product will be emailed instantly after payment.
           </p>
         </form>
+      </div>
+
+      <div className="md:col-span-2">
+        <ProductReviews product={product} />
       </div>
     </div>
   );

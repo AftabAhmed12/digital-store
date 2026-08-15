@@ -22,6 +22,7 @@ import AdminProductForm from "./pages/admin/AdminProductForm.jsx";
 import AdminBlogs from "./pages/admin/AdminBlogs.jsx";
 import AdminBlogForm from "./pages/admin/AdminBlogForm.jsx";
 import AdminOrders from "./pages/admin/AdminOrders.jsx";
+import AdminReviews from "./pages/admin/AdminReviews.jsx";
 import AdminAbandoned from "./pages/admin/AdminAbandoned.jsx";
 import AdminChatLeads from "./pages/admin/AdminChatLeads.jsx";
 
@@ -67,6 +68,7 @@ export default function App() {
         <Route path="blogs/new" element={<AdminBlogForm />} />
         <Route path="blogs/:id/edit" element={<AdminBlogForm />} />
         <Route path="orders" element={<AdminOrders />} />
+        <Route path="reviews" element={<AdminReviews />} />
         <Route path="cancelled" element={<AdminAbandoned />} />
         <Route path="leads" element={<AdminChatLeads />} />
       </Route>
