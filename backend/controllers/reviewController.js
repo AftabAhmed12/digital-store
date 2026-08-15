@@ -67,7 +67,9 @@ export const adminGetReviews = async (req, res) => {
       const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
       filter.$or = [{ name: rx }, { email: rx }, { comment: rx }, { productTitle: rx }, { title: rx }];
     }
-    const reviews = await Review.find(filter).sort({ createdAt: -1 });
+    const reviews = await Review.find(filter)
+      .populate("product", "slug")
+      .sort({ createdAt: -1 });
     res.json(reviews);
   } catch (err) {
     res.status(500).json({ message: err.message });

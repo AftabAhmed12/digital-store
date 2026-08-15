@@ -140,7 +140,7 @@ export const fulfillOrder = async (session) => {
 // ---------- ADMIN ----------
 
 export const adminGetOrders = async (req, res) => {
-  const orders = await Order.find().populate("product", "title").sort({ createdAt: -1 });
+  const orders = await Order.find().populate("product", "title slug").sort({ createdAt: -1 });
   res.json(orders);
 };
 
@@ -148,7 +148,7 @@ export const adminGetOrders = async (req, res) => {
 // so the admin can approach them later. Sorted by most recent attempt.
 export const adminGetCancelledOrders = async (req, res) => {
   const orders = await Order.find({ status: "cancelled" })
-    .populate("product", "title")
+    .populate("product", "title slug")
     .sort({ createdAt: -1 });
   res.json(orders);
 };
