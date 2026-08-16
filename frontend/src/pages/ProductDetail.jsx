@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 import ProductGallery from "../components/ProductGallery.jsx";
 import ProductReviews from "../components/ProductReviews.jsx";
 import ProductShare from "../components/ProductShare.jsx";
-import RelatedProducts from "../components/RelatedProducts.jsx";
 import Seo from "../components/Seo.jsx";
+
+// Lazy-loaded on its own so the extra fetch + cards don't ship with the product page.
+const RelatedProducts = lazy(() => import("../components/RelatedProducts.jsx"));
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -170,7 +172,9 @@ export default function ProductDetail() {
       </div>
 
       <div className="md:col-span-2">
-        <RelatedProducts category={product.category} slug={product.slug} />
+        <Suspense fallback={null}>
+          <RelatedProducts category={product.category} slug={product.slug} />
+        </Suspense>
       </div>
     </div>
   );

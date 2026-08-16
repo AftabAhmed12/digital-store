@@ -1,1 +1,0 @@
-import{j as n}from"./index-1gps38zp.js";function o({slug:e,title:r}){return e?n.jsx("a",{href:`/products/${e}`,target:"_blank",rel:"noreferrer",title:"Open product page in new tab",className:"font-semibold text-blue hover:underline",children:r}):n.jsx("span",{className:"font-semibold",children:r})}export{o as P};
