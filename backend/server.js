@@ -11,6 +11,7 @@ import contactRoutes from "./routes/contactRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import webhookRoutes from "./routes/webhookRoutes.js";
+import seoRoutes from "./routes/seoRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -31,6 +32,9 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/reviews", reviewRoutes);
+
+// SEO files served at the domain root (sitemap.xml / robots.txt)
+app.use("/", seoRoutes);
 
 app.get("/", (req, res) => res.send("Digital Store API is running"));
 
