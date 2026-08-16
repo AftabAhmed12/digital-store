@@ -3,6 +3,7 @@ import api from "../api/axios.js";
 import ProductCard from "../components/ProductCard.jsx";
 import Loader from "../components/Loader.jsx";
 import Seo from "../components/Seo.jsx";
+import CategoryFilter from "../components/CategoryFilter.jsx";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -65,27 +66,12 @@ export default function Products() {
           onChange={(e) => setSearch(e.target.value)}
           className="bg-surface border border-border rounded-lg px-4 py-2.5 text-sm w-full md:w-72 focus:border-gold outline-none"
         />
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setActiveCategory("")}
-            className={`px-4 py-2 rounded-lg text-sm border ${
-              activeCategory === "" ? "bg-gold text-ink border-gold" : "border-border text-text-muted hover:border-teal"
-            }`}
-          >
-            All
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-lg text-sm border capitalize ${
-                activeCategory === cat ? "bg-gold text-ink border-gold" : "border-border text-text-muted hover:border-teal"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        <CategoryFilter
+          categories={categories}
+          active={activeCategory}
+          onChange={setActiveCategory}
+          label="All Categories"
+        />
       </div>
 
       {loading ? (

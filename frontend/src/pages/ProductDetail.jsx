@@ -14,6 +14,7 @@ export default function ProductDetail() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [descExpanded, setDescExpanded] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -91,7 +92,42 @@ export default function ProductDetail() {
       <div>
         <p className="text-xs uppercase tracking-widest text-teal mb-2">{product.category}</p>
         <h1 className="font-display font-700 text-3xl md:text-4xl mb-4">{product.title}</h1>
-        <p className="text-text-muted leading-relaxed mb-6">{product.description}</p>
+
+        {product.description.length > 300 && (
+          <div className="mb-6">
+            <div
+              className={`overflow-hidden transition-[max-height] duration-500 ease-in-out ${
+                descExpanded ? "max-h-[3000px]" : "max-h-28"
+              }`}
+            >
+              <p className={`text-text-muted leading-relaxed ${descExpanded ? "" : "line-clamp-4"}`}>
+                {product.description}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDescExpanded((v) => !v)}
+              className="mt-2 text-sm font-medium text-gold hover:underline inline-flex items-center gap-1 transition-colors"
+            >
+              {descExpanded ? "Show Less" : "Show More"}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                className={`transition-transform duration-300 ${descExpanded ? "rotate-180" : ""}`}
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {product.description.length <= 300 && (
+          <p className="text-text-muted leading-relaxed mb-6">{product.description}</p>
+        )}
 
 <div className="flex items-baseline gap-2 mb-6">
           <span className="font-mono text-gold text-3xl">

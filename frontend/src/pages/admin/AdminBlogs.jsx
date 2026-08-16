@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
+import CategoryFilter from "../../components/CategoryFilter.jsx";
 
 export default function AdminBlogs() {
   const [blogs, setBlogs] = useState([]);
@@ -49,27 +50,12 @@ export default function AdminBlogs() {
           onChange={(e) => setSearch(e.target.value)}
           className="bg-surface border border-border rounded-lg px-4 py-2.5 text-sm w-full lg:w-72 focus:border-gold outline-none"
         />
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setCategory("")}
-            className={`px-3 py-2 rounded-lg text-sm border capitalize transition ${
-              category === "" ? "bg-gold text-ink border-gold" : "border-border text-text-muted hover:text-gold hover:border-gold/60"
-            }`}
-          >
-            All
-          </button>
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setCategory(c)}
-              className={`px-3 py-2 rounded-lg text-sm border capitalize transition ${
-                category === c ? "bg-gold text-ink border-gold" : "border-border text-text-muted hover:text-gold hover:border-gold/60"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
+        <CategoryFilter
+          categories={categories}
+          active={category}
+          onChange={setCategory}
+          label="All Categories"
+        />
       </div>
 
       <div className="bg-surface border border-border rounded-xl overflow-hidden overflow-x-auto">
