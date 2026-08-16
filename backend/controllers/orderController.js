@@ -1,23 +1,46 @@
 import Stripe from "stripe";
 import Product from "../models/Product.js";
 import Order from "../models/Order.js";
+import Coupon from "../models/Coupon.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { orderDeliveryTemplate } from "../utils/emailTemplate.js";
 import { buildDownloadUrl } from "../utils/downloadUrl.js";
+import { salePriceFor } from "../utils/pricing.js";
+import { resolveCouponDiscount } from "./couponController.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // @desc Create a Stripe Checkout session for a product (no login required)
 // @route POST /api/orders/checkout
-// body: { productId, customerEmail }
+// body: { productId, customerEmail, couponCode? }
+// Prices are ALWAYS computed server-side (product discountPercent first, then the
+// optional coupon) — the client never sends an amount.
 export const createCheckoutSession = async (req, res) => {
   try {
-    const { productId, customerEmail } = req.body;
+    const { productId, customerEmail, couponCode } = req.body;
     if (!customerEmail) return res.status(400).json({ message: "Email is required" });
 
     const product = await Product.findById(productId);
     if (!product || !product.isActive) {
       return res.status(404).json({ message: "Product not found" });
+    }
+
+    const originalAmountCents = Math.round(product.price * 100);
+    const salePrice = salePriceFor(product);
+    let finalAmountCents = Math.round(salePrice * 100);
+
+    let coupon = null;
+    if (couponCode) {
+      const result = await resolveCouponDiscount({ code: couponCode, product });
+      if (result.error) return res.status(400).json({ message: result.error });
+      coupon = result.coupon;
+      finalAmountCents = Math.round((salePrice - result.discount) * 100);
+    }
+    finalAmountCents = Math.max(finalAmountCents, 0);
+    if (finalAmountCents === 0) {
+      return res.status(400).json({
+        message: "This coupon covers the full price — please use a smaller discount for checkout",
+      });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -32,7 +55,7 @@ export const createCheckoutSession = async (req, res) => {
               name: product.title,
               description: product.shortDescription || undefined,
             },
-            unit_amount: Math.round(product.price * 100),
+            unit_amount: finalAmountCents,
           },
           quantity: 1,
         },
@@ -50,7 +73,11 @@ export const createCheckoutSession = async (req, res) => {
       product: product._id,
       productTitle: product.title,
       customerEmail,
-      amount: Math.round(product.price * 100),
+      amount: finalAmountCents,
+      originalAmount: originalAmountCents,
+      discountAmount: originalAmountCents - finalAmountCents,
+      couponCode: coupon?.code,
+      couponId: coupon?._id,
       currency: product.currency,
       stripeSessionId: session.id,
       status: "pending",
@@ -107,6 +134,13 @@ export const fulfillOrder = async (session) => {
   order.stripePaymentIntentId = session.payment_intent;
   await order.save();
 
+  // Count the coupon use only once the payment is actually confirmed
+  if (order.couponId && !order.couponCounted) {
+    await Coupon.updateOne({ _id: order.couponId }, { $inc: { usedCount: 1 } });
+    order.couponCounted = true;
+    await order.save();
+  }
+
   const product = await Product.findById(order.product);
   if (!product?.digitalFile?.url) {
     order.status = "email_failed";
@@ -119,6 +153,9 @@ export const fulfillOrder = async (session) => {
     productTitle: order.productTitle,
     downloadUrl: buildDownloadUrl(product),
     amount: order.amount,
+    originalAmount: order.originalAmount,
+    discountAmount: order.discountAmount,
+    couponCode: order.couponCode,
     currency: order.currency,
   });
 
@@ -171,6 +208,9 @@ export const resendOrderEmail = async (req, res) => {
     productTitle: order.productTitle,
     downloadUrl: buildDownloadUrl(product),
     amount: order.amount,
+    originalAmount: order.originalAmount,
+    discountAmount: order.discountAmount,
+    couponCode: order.couponCode,
     currency: order.currency,
   });
 

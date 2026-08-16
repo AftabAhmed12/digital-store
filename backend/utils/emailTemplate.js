@@ -1,5 +1,22 @@
 // Simple, dependency-free HTML email template (inline styles -> works in all email clients)
-export const orderDeliveryTemplate = ({ customerEmail, productTitle, downloadUrl, amount, currency }) => {
+export const orderDeliveryTemplate = ({ customerEmail, productTitle, downloadUrl, amount, originalAmount, discountAmount, couponCode, currency }) => {
+  const hasDiscount = discountAmount > 0;
+  const money = (cents) => `${((cents || 0) / 100).toFixed(2)} ${currency.toUpperCase()}`;
+  const priceRows = hasDiscount
+    ? `
+      <tr>
+        <td style="padding:4px 20px 0 20px;">
+          <p style="margin:0;color:#7A8299;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Subtotal</p>
+          <p style="margin:0;color:#E7E9EE;font-size:14px;">${money(originalAmount)}</p>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:6px 20px 0 20px;">
+          <p style="margin:0;color:#7A8299;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Discount${couponCode ? ` (${couponCode})` : ""}</p>
+          <p style="margin:0;color:#38B2AC;font-size:14px;font-weight:600;">− ${money(discountAmount)}</p>
+        </td>
+      </tr>`
+    : "";
   return `
   <!DOCTYPE html>
   <html>
@@ -30,9 +47,10 @@ export const orderDeliveryTemplate = ({ customerEmail, productTitle, downloadUrl
                       <p style="margin:0 0 4px 0;color:#7A8299;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Product</p>
                       <p style="margin:0 0 12px 0;color:#E7E9EE;font-size:16px;font-weight:600;">${productTitle}</p>
                       <p style="margin:0 0 4px 0;color:#7A8299;font-size:11px;text-transform:uppercase;letter-spacing:1px;">Amount Paid</p>
-                      <p style="margin:0;color:#E7E9EE;font-size:16px;font-weight:600;">${(amount / 100).toFixed(2)} ${currency.toUpperCase()}</p>
+                      <p style="margin:0;color:#E7E9EE;font-size:16px;font-weight:600;">${money(amount)}</p>
                     </td>
                   </tr>
+                  ${priceRows}
                 </table>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                   <tr>

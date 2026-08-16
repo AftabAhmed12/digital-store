@@ -142,7 +142,7 @@ export const createProduct = async (req, res) => {
       return res.status(400).json({ message: "The digital product file must be a PDF (.pdf)" });
     }
 
-    const { title, description, shortDescription, price, category, currency } = req.body;
+    const { title, description, shortDescription, price, category, currency, discountPercent } = req.body;
     const slug = title
       .toLowerCase()
       .trim()
@@ -160,6 +160,7 @@ export const createProduct = async (req, res) => {
       description,
       shortDescription,
       price,
+      discountPercent: Math.min(Math.max(Number(discountPercent) || 0, 0), 90),
       currency: currency || "usd",
       category,
       images,
@@ -184,10 +185,13 @@ export const updateProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found" });
 
-    const fields = ["title", "description", "shortDescription", "price", "category", "currency", "isActive", "isFeatured"];
+    const fields = ["title", "description", "shortDescription", "price", "category", "currency", "isActive", "isFeatured", "discountPercent"];
     fields.forEach((f) => {
       if (req.body[f] !== undefined) product[f] = req.body[f];
     });
+    if (product.discountPercent !== undefined) {
+      product.discountPercent = Math.min(Math.max(Number(product.discountPercent) || 0, 0), 90);
+    }
 
     // removedImageIds: JSON-stringified array of publicIds to remove, sent from the admin form
     if (req.body.removedImageIds) {

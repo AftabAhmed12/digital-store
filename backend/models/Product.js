@@ -7,6 +7,8 @@ const productSchema = new mongoose.Schema(
     description: { type: String, required: true },
     shortDescription: { type: String },
     price: { type: Number, required: true },
+    // Optional % off the base price (0–90). Sale price is derived: price * (1 - discountPercent/100)
+    discountPercent: { type: Number, default: 0, min: 0, max: 90 },
     currency: { type: String, default: "usd" },
     category: { type: String, required: true, index: true },
     // Multiple gallery images shown on the product page (first one is used as the card thumbnail)
