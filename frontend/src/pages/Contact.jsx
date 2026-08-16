@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../api/axios.js";
 import Seo from "../components/Seo.jsx";
+import SocialLinks from "../components/SocialLinks.jsx";
 
 const infoItems = [
   {
@@ -164,6 +165,10 @@ export default function Contact() {
           </form>
         </div>
       )}
+
+      <div className="mt-20">
+        <SocialLinks />
+      </div>
     </div>
   );
 }
