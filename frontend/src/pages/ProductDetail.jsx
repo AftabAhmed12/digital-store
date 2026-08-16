@@ -5,6 +5,7 @@ import Loader from "../components/Loader.jsx";
 import ProductGallery from "../components/ProductGallery.jsx";
 import ProductReviews from "../components/ProductReviews.jsx";
 import ProductShare from "../components/ProductShare.jsx";
+import RelatedProducts from "../components/RelatedProducts.jsx";
 import Seo from "../components/Seo.jsx";
 
 export default function ProductDetail() {
@@ -166,6 +167,10 @@ export default function ProductDetail() {
 
       <div className="md:col-span-2">
         <ProductReviews product={product} />
+      </div>
+
+      <div className="md:col-span-2">
+        <RelatedProducts category={product.category} slug={product.slug} />
       </div>
     </div>
   );

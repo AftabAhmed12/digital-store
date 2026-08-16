@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 // Signature element: product card styled like a digital "ticket stub" —
 // a perforated line separates the preview from the instant-delivery detail,
 // reinforcing that buying = instant email delivery, not a physical shipment.
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, compact = false }) {
   return (
     <Link
       to={`/products/${product.slug}`}
@@ -31,14 +31,18 @@ export default function ProductCard({ product }) {
         <span className="absolute -right-2 -top-2 w-4 h-4 rounded-full bg-ink border border-border" />
       </div>
 
-      <div className="p-4">
+      <div className={compact ? "p-3" : "p-4"}>
         <p className="text-xs uppercase tracking-widest text-teal mb-1">{product.category}</p>
-        <h3 className="font-display font-600 text-base mb-2 group-hover:text-gold transition-colors line-clamp-1">
+        <h3
+          className={`font-display font-600 group-hover:text-gold transition-colors line-clamp-1 ${
+            compact ? "text-sm mb-2" : "text-base mb-2"
+          }`}
+        >
           {product.title}
         </h3>
-        <p className="text-text-faint text-sm mb-4 line-clamp-2">{product.shortDescription}</p>
+        {!compact && <p className="text-text-faint text-sm mb-4 line-clamp-2">{product.shortDescription}</p>}
         <div className="flex items-center justify-between">
-          <span className="font-mono text-gold text-lg">
+          <span className={`font-mono text-gold ${compact ? "text-base" : "text-lg"}`}>
             {product.currency?.toUpperCase() || "USD"} {product.price?.toFixed(2)}
           </span>
           <span className="text-xs text-text-faint flex items-center gap-1">
