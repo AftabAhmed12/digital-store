@@ -1,5 +1,6 @@
 import ChatLead from "../models/ChatLead.js";
 import Product from "../models/Product.js";
+import Blog from "../models/Blog.js";
 
 // ---------- Small "brain" ----------
 
@@ -100,12 +101,64 @@ const FAQ = [
     reply:
       "Vaultly is a digital store for instant downloads — fonts, templates, UI kits and more. You pick a product, pay once, and it's in your inbox within seconds. No accounts, no subscriptions, no friction — that's the whole idea.",
   },
+  {
+    id: "blog",
+    keys: [
+      "blog", "blogs", "blog post", "article", "articles", "guide", "guides",
+      "tutorial", "tutorials", "insights", "post", "posts", "khabar",
+    ],
+    reply: null, // handled dynamically by blog search
+  },
+  {
+    id: "reviews",
+    keys: [
+      "review", "reviews", "rating", "stars", "star", "feedback", "testimonial",
+      "what do others say", "is it good", "is this good", "trusted", "reliable",
+      "reputation", "rate the",
+    ],
+    reply:
+      "Every product page shows reviews right below — scroll down and you'll see what other buyers think before you pay.\n\nAfter you've purchased, you can leave your own rating and review on the same page — it takes under a minute and genuinely helps the next person decide. If a product has no reviews yet, feel free to be the first!",
+  },
+  {
+    id: "my-orders",
+    keys: [
+      "my order", "track order", "track my", "order status", "where is my order",
+      "my purchase", "have i bought", "did i buy", "which product did i",
+      "payment status", "order kaha", "order ka status", "order check",
+    ],
+    reply:
+      "Orders are tied to the email you paid with — there's no login or account to check, so your inbox is the source of truth.\n\nLook for the purchase email that carries your download button. If you don't see it, check your spam/junk folder. If it's still missing, head to the Contact page and mention the email you used at checkout — we'll trace it and re-send it for you.",
+  },
 ];
 
 const SEARCH_TRIGGERS = [
   "do you have", "have you", "is there", "find", "search", "recommend",
   "available", "sell", "suggest", "offer", "show", "list", "browse",
   "koi", "chahiye", "chiye", "mil sakta", "mila",
+];
+
+const BLOG_TRIGGERS = [
+  "blog", "blogs", "blog post", "article", "articles", "guide", "guides",
+  "tutorial", "tutorials", "insights", "khabar", "latest read", "read",
+];
+
+// "Please do it for me" style requests — the assistant can guide but never act.
+const ACTION_KEYS = [
+  "on my behalf", "my behalf", "behalf", "order for me", "buy for me",
+  "pay for me", "purchase for me", "download for me", "order it for",
+  "buy it for", "do it for", "do this for", "do that for", "place the order",
+  "place this order", "place an order", "place order", "complete the order",
+  "complete the payment", "complete payment", "you order it", "you buy it",
+  "you purchase it", "you do it", "order karo", "kharid lo", "buy kar do",
+  "mere liye", "meri taraf", "mere behalf", "kar do", "kardo", "karo",
+];
+
+// Business/admin info is never shared through the customer chat.
+const ADMIN_KEYS = [
+  "admin", "admin login", "admin dashboard", "dashboard", "backend",
+  "business", "revenue", "profit", "how many orders", "how many customers",
+  "how many sales", "total sales", "your sales", "your orders",
+  "your customers", "internal", "business data", "company data",
 ];
 
 const GREETINGS = ["hi", "hello", "hey", "salam", "salaam", "assalam", "hola", "yo", "salamu"];
@@ -149,13 +202,57 @@ const formatProductList = (matches) =>
     .map((p, i) => `${i + 1}. ${p.title} — $${p.price.toFixed(2)}`)
     .join("\n");
 
+// ---------- Blog intelligence ----------
+
+const searchBlogs = (msg, blogs, queryTokens) => {
+  const scored = blogs.map((b) => {
+    const title = (b.title || "").toLowerCase();
+    const category = (b.category || "").toLowerCase();
+    const excerpt = (b.excerpt || "").toLowerCase();
+
+    let score = 0;
+    for (const t of queryTokens) {
+      if (title.includes(t)) score += 4;
+      if (category.includes(t)) score += 3;
+      if (excerpt.includes(t)) score += 2;
+    }
+    const phrase = msg.toLowerCase().trim();
+    if (phrase.length > 3 && title.includes(phrase)) score += 8;
+    return { b, score };
+  });
+
+  return scored
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map((s) => s.b);
+};
+
+const formatBlogList = (matches) =>
+  matches.map((b, i) => `${i + 1}. ${b.title} — ${b.category}`).join("\n");
+
 // ---------- Replies ----------
 
 const greetingReply =
-  "Hey, I'm Vaultly Assistant — your guide to the shop.\n\nAsk me about products, buying, payment or delivery and I'll point you the right way. Try things like:\n\n• \"Do you have fonts?\"\n• \"How do I buy?\"\n• \"When will I get my download?\"";
+  "Hey, I'm Vaultly Assistant — your guide to the shop.\n\nAsk me about products, buying, payment, delivery, reviews or our blog and I'll point you the right way. Try things like:\n\n• \"Do you have fonts?\"\n• \"How do I buy?\"\n• \"When will I get my download?\"\n• \"Any blog guides?\"";
 
 const capabilitiesReply =
-  "Here's what I can do for you:\n\n• Find a product or category — e.g. \"do you have UI kits?\"\n• How to buy, pay or get your download\n• Refunds, contacts and account questions\n• Recommend what to grab next\n\nWhat would you like to know?";
+  "Here's what I can do for you:\n\n• Find a product or category — e.g. \"Do you have UI kits?\"\n• How to buy, pay or get your download\n• Refunds, order status and support\n• Reviews and ratings on products\n• Guides and blog posts\n• Recommend what to grab next\n\nWhat would you like to know?";
+
+const actionRequestReply =
+  "I'd love to help — but placing orders, paying and downloading are steps only you can complete. For your security and privacy, I'm not able to carry them out on your behalf.\n\nIt's quick though! Just:\n\n1. Pick the product on the Products page\n2. Tap buy and pay securely with card, Apple Pay or Google Pay\n3. Your download lands in your inbox automatically\n\nIf you get stuck at any step, tell me exactly what's happening and I'll walk you through it.";
+
+const adminPrivacyReply =
+  "That one lives behind the scenes, so I can't share admin or business details from here — I'm here for the customer side: products, buying, payment, delivery and support.\n\nIf you need a hand with anything for your shopping, just ask!";
+
+const genericBlogReply =
+  "Yes, we do! The Blog page is packed with guides, tips and updates — things like templates, fonts, UI kits and design workflows.\n\nTell me a topic you're curious about and I'll point you to the right post, or browse it anytime from the Blog page.";
+
+const blogFoundReply = (matches) =>
+  `Here's what's on the blog:\n\n${formatBlogList(matches)}\n\nHead to the Blog page to read them — and if you tell me another topic, I'll dig deeper.`;
+
+const blogNotFoundReply =
+  "I couldn't find a blog post about that yet — but new guides land often!\n\nYou can browse everything on the Blog page, and if there's a topic you'd love us to cover, the Contact page is the fastest way to suggest it.";
 
 const notFoundReply =
   "I couldn't find it on the shelf right now — but we add new drops often, so it may land soon!\n\nIn the meantime try a different word, or head to the Products page to see everything we have. If it's something specific you need, the Contact page is the fastest way to ask us directly.";
@@ -163,7 +260,7 @@ const notFoundReply =
 const outOfScopeReply =
   "I love the curiosity — but that one's a bit out of my lane! I'm focused on Vaultly's products, orders and downloads.\n\nTry asking things like \"How do I buy?\", \"Do you have business cards?\" or \"When will my download arrive?\" — and for anything else, the Contact page will get a human on it fast.";
 
-const makeReply = (message, products) => {
+const makeReply = (message, products, blogs = []) => {
   const msg = message.trim().toLowerCase();
   if (!msg) return "Say something like \"Do you have fonts?\" and I'll point you in the right direction.";
 
@@ -178,15 +275,34 @@ const makeReply = (message, products) => {
     return capabilitiesReply;
   }
 
+  // 3. "Do it for me" requests — we guide, the customer acts
+  if (includesAny(msg, ACTION_KEYS)) {
+    return actionRequestReply;
+  }
+
+  // 4. Admin/business info — never exposed to customers
+  if (includesAny(msg, ADMIN_KEYS)) {
+    return adminPrivacyReply;
+  }
+
   const queryTokens = tokens(msg);
   const strongSearch = includesAny(msg, SEARCH_TRIGGERS) ||
     (queryTokens.length > 0 && products.some((p) => queryTokens.some((t) => (p.category || "").toLowerCase().includes(t))));
   const matches = searchProducts(msg, products, queryTokens);
+
+  // 5. Blog hunt wins when the visitor explicitly asks for posts/guides
+  if (includesAny(msg, BLOG_TRIGGERS)) {
+    const blogMatches = searchBlogs(msg, blogs, queryTokens);
+    if (blogMatches.length > 0) return blogFoundReply(blogMatches);
+    if (queryTokens.length === 0) return genericBlogReply;
+    return blogNotFoundReply;
+  }
+
   const faqHit = queryTokens.length > 0
     ? FAQ.find((item) => item.reply && includesAny(msg, item.keys) && tokens(item.keys.join(" ")).some((t) => queryTokens.includes(t)))
     : null;
 
-  // 3. Unambiguous product hunt wins over everything ("find", "you have", "sell"…)
+  // 6. Unambiguous product hunt wins over everything ("find", "you have", "sell"…)
   if (strongSearch && matches.length > 0) {
     return (
       `Here's what I found:\n\n${formatProductList(matches)}\n\n` +
@@ -194,10 +310,10 @@ const makeReply = (message, products) => {
     );
   }
 
-  // 4. FAQ intents (refund, payment, delivery, etc.)
+  // 7. FAQ intents (refund, payment, delivery, etc.)
   if (faqHit) return faqHit.reply;
 
-  // 5. Implicit product suggestion — user typed a product-ish phrase directly
+  // 8. Implicit product suggestion — user typed a product-ish phrase directly
   if (matches.length > 0) {
     return (
       `Sound like you're after something like this:\n\n${formatProductList(matches)}\n\n` +
@@ -205,10 +321,10 @@ const makeReply = (message, products) => {
     );
   }
 
-  // 6. Explicit hunt came up empty
+  // 9. Explicit hunt came up empty
   if (strongSearch) return notFoundReply;
 
-  // 7. Fallback
+  // 10. Fallback
   return outOfScopeReply;
 };
 
@@ -245,6 +361,7 @@ export const chatMessage = async (req, res) => {
     if (!email || !message) return res.status(400).json({ message: "Email and message are required" });
 
     const products = await Product.find({ isActive: true }).select("title category price shortDescription description salesCount").lean();
+    const blogs = await Blog.find({ isPublished: true }).select("title category excerpt").lean();
 
     let lead = await ChatLead.findOne({ email: email.toLowerCase() });
     if (!lead) {
@@ -260,7 +377,7 @@ export const chatMessage = async (req, res) => {
     lead.lastSeenAt = new Date();
     await lead.save();
 
-    const reply = makeReply(message, products);
+    const reply = makeReply(message, products, blogs);
     res.json({ reply });
   } catch (err) {
     res.status(500).json({ message: err.message });
