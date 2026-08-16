@@ -8,6 +8,8 @@ const SUGGESTIONS = [
   "How do I buy?",
   "When will I get my download?",
   "Do you accept card payments?",
+  "Any blog guides?",
+  "Can I leave a review?",
 ];
 
 // Stable ids for messages so typing progress persists across panel open/close.

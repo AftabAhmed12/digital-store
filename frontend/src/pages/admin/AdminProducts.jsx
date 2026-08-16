@@ -6,6 +6,8 @@ import Loader from "../../components/Loader.jsx";
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
 
   const load = () => {
     setLoading(true);
@@ -20,15 +22,54 @@ export default function AdminProducts() {
     load();
   };
 
+  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))].sort();
+  const q = search.trim().toLowerCase();
+  const filtered = products.filter((p) => {
+    const inCategory = !category || p.category === category;
+    const inSearch = !q || p.title.toLowerCase().includes(q) || (p.category || "").toLowerCase().includes(q);
+    return inCategory && inSearch;
+  });
+
   if (loading) return <Loader />;
 
   return (
     <div className="container-px py-10 max-w-6xl">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="font-display font-700 text-2xl">Products</h1>
         <Link to="/admin/products/new" className="bg-gold text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
           + New Product
         </Link>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-3 mb-6 items-start">
+        <input
+          type="text"
+          placeholder="Search by title or category..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="bg-surface border border-border rounded-lg px-4 py-2.5 text-sm w-full lg:w-72 focus:border-gold outline-none"
+        />
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setCategory("")}
+            className={`px-3 py-2 rounded-lg text-sm border capitalize transition ${
+              category === "" ? "bg-gold text-ink border-gold" : "border-border text-text-muted hover:text-gold hover:border-gold/60"
+            }`}
+          >
+            All
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCategory(c)}
+              className={`px-3 py-2 rounded-lg text-sm border capitalize transition ${
+                category === c ? "bg-gold text-ink border-gold" : "border-border text-text-muted hover:text-gold hover:border-gold/60"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="bg-surface border border-border rounded-xl overflow-hidden overflow-x-auto">
@@ -44,8 +85,8 @@ export default function AdminProducts() {
             </tr>
           </thead>
           <tbody>
-            {products.map((p) => (
-              <tr key={p._id} className="border-b border-border last:border-0">
+            {filtered.map((p) => (
+              <tr key={p._id} className="border-b border-border last:border-0 hover:bg-ink/40 transition-colors">
                 <td className="p-4">{p.title}</td>
                 <td className="p-4 text-text-muted capitalize">{p.category}</td>
                 <td className="p-4 font-mono">${p.price.toFixed(2)}</td>
@@ -59,7 +100,7 @@ export default function AdminProducts() {
             ))}
           </tbody>
         </table>
-        {products.length === 0 && <p className="p-8 text-center text-text-faint">No products yet.</p>}
+        {filtered.length === 0 && <p className="p-8 text-center text-text-faint">No products found.</p>}
       </div>
     </div>
   );
