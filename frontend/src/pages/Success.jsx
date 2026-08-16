@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import api from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
+import Seo from "../components/Seo.jsx";
 
 export default function Success() {
   const [params] = useSearchParams();
@@ -32,6 +33,7 @@ export default function Success() {
 
   return (
     <div className="container-px max-w-xl mx-auto py-24 text-center">
+      <Seo title="Payment Confirmed | Vaultly" description="Your payment was successful." noindex />
       <div className="w-16 h-16 rounded-full bg-teal/10 border border-teal/40 flex items-center justify-center mx-auto mb-6">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-teal">
           <path d="M20 6 9 17l-5-5" />

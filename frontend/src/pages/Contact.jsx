@@ -1,5 +1,6 @@
 import { useState } from "react";
 import api from "../api/axios.js";
+import Seo from "../components/Seo.jsx";
 
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
@@ -21,6 +22,10 @@ export default function Contact() {
 
   return (
     <div className="container-px max-w-2xl mx-auto py-16">
+      <Seo
+        title="Contact Us — Vaultly Support"
+        description="Questions about a product or an order? Send us a message and we'll get back to you."
+      />
       <h1 className="font-display font-700 text-3xl md:text-4xl mb-3">Contact Us</h1>
       <p className="text-text-faint mb-10">Questions about a product or an order? Send us a message.</p>
 

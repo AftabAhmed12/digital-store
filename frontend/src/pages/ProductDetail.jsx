@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 import ProductGallery from "../components/ProductGallery.jsx";
 import ProductReviews from "../components/ProductReviews.jsx";
 import ProductShare from "../components/ProductShare.jsx";
+import Seo from "../components/Seo.jsx";
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -23,24 +24,42 @@ export default function ProductDetail() {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  // Keep social-share preview tags in sync with the product (used by FB/LinkedIn/WhatsApp previews)
-  useEffect(() => {
-    if (!product) return;
-    const setMeta = (attr, key, value) => {
-      const tag = document.head.querySelector(`meta[${attr}="${key}"]`);
-      if (tag) tag.setAttribute("content", value);
+  const seo = useMemo(() => {
+    if (!product) return { title: null, description: null, image: null, jsonLd: null };
+    const desc = (product.shortDescription || product.description || "").slice(0, 180);
+    const origin = window.location.origin;
+    const url = `${origin}/products/${product.slug}`;
+    const image = product.images?.[0]?.url;
+    return {
+      title: `${product.title} — Instant Download | Vaultly`,
+      description: desc,
+      image,
+      jsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: product.title,
+          description: desc,
+          image,
+          brand: { "@type": "Brand", name: "Vaultly" },
+          offers: {
+            "@type": "Offer",
+            url,
+            price: product.price,
+            priceCurrency: (product.currency || "usd").toUpperCase(),
+            availability: "https://schema.org/InStock",
+          },
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Products", item: `${origin}/products` },
+            { "@type": "ListItem", position: 2, name: product.title, item: url },
+          ],
+        },
+      ],
     };
-    const desc = product.shortDescription || product.description;
-    const blurb = (typeof desc === "string" ? desc : "").slice(0, 180);
-    setMeta("property", "og:title", product.title);
-    setMeta("property", "og:description", blurb);
-    setMeta("property", "og:url", window.location.href);
-    setMeta("name", "twitter:title", product.title);
-    setMeta("name", "twitter:description", blurb);
-    if (product.images?.[0]?.url) {
-      setMeta("property", "og:image", product.images[0].url);
-      setMeta("name", "twitter:image", product.images[0].url);
-    }
   }, [product]);
 
   const handleBuy = async (e) => {
@@ -66,6 +85,7 @@ export default function ProductDetail() {
 
   return (
     <div className="container-px max-w-6xl mx-auto py-16 grid md:grid-cols-2 gap-12">
+      <Seo title={seo.title} description={seo.description} image={seo.image} jsonLd={seo.jsonLd} />
       <ProductGallery images={product.images} title={product.title} />
 
       <div>

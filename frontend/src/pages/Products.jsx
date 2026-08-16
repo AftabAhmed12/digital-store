@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../api/axios.js";
 import ProductCard from "../components/ProductCard.jsx";
 import Loader from "../components/Loader.jsx";
+import Seo from "../components/Seo.jsx";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -25,8 +26,34 @@ export default function Products() {
       .finally(() => setLoading(false));
   }, [activeCategory, search]);
 
+  const catalogJsonLd = useMemo(() => {
+    const origin = window.location.origin;
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "All Products",
+        url: `${origin}/products`,
+        mainEntity: {
+          "@type": "ItemList",
+          itemListElement: products.map((p, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            url: `${origin}/products/${p.slug}`,
+            name: p.title,
+          })),
+        },
+      },
+    ];
+  }, [products]);
+
   return (
     <div className="container-px max-w-7xl mx-auto py-16">
+      <Seo
+        title="All Products — Buy Digital Downloads Instantly | Vaultly"
+        description="Browse fonts, templates, UI kits and more. Instant download delivered to your inbox after payment — no account needed."
+        jsonLd={catalogJsonLd}
+      />
       <h1 className="font-display font-700 text-3xl md:text-4xl mb-3">All Products</h1>
       <p className="text-text-faint mb-10">Browse the catalog — every purchase is delivered by email instantly.</p>
 

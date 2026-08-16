@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios.js";
 import ProductCard from "../components/ProductCard.jsx";
 import Loader from "../components/Loader.jsx";
 import SocialLinks from "../components/SocialLinks.jsx";
+import Seo from "../components/Seo.jsx";
+import SketchScene from "../components/SketchScene.jsx";
 
 export default function Home() {
   const [featured, setFeatured] = useState([]);
@@ -16,27 +18,57 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
+  const siteUrl = window.location.origin;
+
+  const homeJsonLd = useMemo(
+    () => [
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: "Vaultly",
+        url: siteUrl,
+        description: "Vaultly sells digital products instantly — fonts, templates, UI kits and more.",
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "Vaultly",
+        url: siteUrl,
+      },
+    ],
+    [siteUrl]
+  );
+
   return (
     <div>
+      <Seo jsonLd={homeJsonLd} />
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(242,184,75,0.08),transparent_40%),radial-gradient(circle_at_80%_60%,rgba(91,141,239,0.10),transparent_45%)]" />
         <div className="container-px max-w-7xl mx-auto relative py-24 md:py-32">
-          <p className="text-gold text-xs uppercase tracking-[3px] font-semibold mb-4">No login. No waiting.</p>
-          <h1 className="font-display font-700 text-4xl md:text-6xl leading-tight max-w-2xl mb-6">
-            Pay once. Your product lands in your inbox <span className="text-gold">instantly.</span>
-          </h1>
-          <p className="text-text-muted text-lg max-w-xl mb-8">
-            Vaultly sells digital products the way they should be sold — pick it, pay for it,
-            and get it emailed to you in seconds. No accounts, no dashboards, no friction.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <Link to="/products" className="bg-gold text-ink font-semibold px-6 py-3 rounded-lg hover:brightness-110 transition">
-              Browse Products
-            </Link>
-            <Link to="/blog" className="border border-border text-text-primary font-semibold px-6 py-3 rounded-lg hover:border-teal transition">
-              Read the Blog
-            </Link>
+          <div className="grid lg:grid-cols-2 gap-14 lg:gap-10 items-center">
+            <div>
+              <p className="text-gold text-xs uppercase tracking-[3px] font-semibold mb-4">No login. No waiting.</p>
+              <h1 className="font-display font-700 text-4xl md:text-6xl leading-tight max-w-2xl mb-6">
+                Pay once. Your product lands in your inbox <span className="text-gold">instantly.</span>
+              </h1>
+              <p className="text-text-muted text-lg max-w-xl mb-8">
+                Vaultly sells digital products the way they should be sold — pick it, pay for it,
+                and get it emailed to you in seconds. No accounts, no dashboards, no friction.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link to="/products" className="bg-gold text-ink font-semibold px-6 py-3 rounded-lg hover:brightness-110 transition">
+                  Browse Products
+                </Link>
+                <Link to="/blog" className="border border-border text-text-primary font-semibold px-6 py-3 rounded-lg hover:border-teal transition">
+                  Read the Blog
+                </Link>
+              </div>
+            </div>
+
+            <div className="hidden lg:flex items-center justify-center">
+              <SketchScene />
+            </div>
           </div>
         </div>
       </section>

@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../api/axios.js";
 import BlogCard from "../components/BlogCard.jsx";
 import Loader from "../components/Loader.jsx";
+import Seo from "../components/Seo.jsx";
 
 export default function Blog() {
   const [blogs, setBlogs] = useState([]);
@@ -22,8 +23,32 @@ export default function Blog() {
       .finally(() => setLoading(false));
   }, [activeCategory]);
 
+  const blogListJsonLd = useMemo(() => {
+    const origin = window.location.origin;
+    return [
+      {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        name: "Vaultly Blog",
+        url: `${origin}/blog`,
+        blogPost: blogs.map((b) => ({
+          "@type": "BlogPosting",
+          headline: b.title,
+          url: `${origin}/blog/${b.slug}`,
+          datePublished: b.createdAt,
+          author: { "@type": "Person", name: b.author || "Vaultly" },
+        })),
+      },
+    ];
+  }, [blogs]);
+
   return (
     <div className="container-px max-w-7xl mx-auto py-16">
+      <Seo
+        title="Blog — Digital Product Guides & Updates | Vaultly"
+        description="Guides, tips and updates on fonts, templates, UI kits and design workflows — organized by category."
+        jsonLd={blogListJsonLd}
+      />
       <h1 className="font-display font-700 text-3xl md:text-4xl mb-3">Blog</h1>
       <p className="text-text-faint mb-10">Guides, updates, and insights — organized by category.</p>
 

@@ -185,6 +185,38 @@
   }
 }
 
+/* Hero "live sketch" — SVG paths draw themselves in a looping sequence.
+   Each line gets its stroke length + stagger delay via inline CSS vars. */
+@keyframes sketch-draw-loop {
+  0% {
+    stroke-dashoffset: var(--sketch-len, 1000);
+  }
+  60% {
+    stroke-dashoffset: 0;
+  }
+  82% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: var(--sketch-len, 1000);
+  }
+}
+
+.sketch-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: sketch-draw-loop 9s linear infinite;
+  animation-delay: var(--sketch-delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sketch-line {
+    animation: none;
+    stroke-dashoffset: 0 !important;
+  }
+}
+
 /* Rich text editor (react-quill) — follows the active theme via CSS variables */
 .rich-text-editor .ql-toolbar.ql-snow {
   background-color: rgb(var(--color-surface));
