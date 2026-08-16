@@ -3,6 +3,7 @@ import {
   getProducts,
   getProductBySlug,
   getCategories,
+  getRelatedProducts,
   adminGetProducts,
   createProduct,
   updateProduct,
@@ -36,6 +37,7 @@ const router = express.Router();
 // Public
 router.get("/", getProducts);
 router.get("/categories", getCategories);
+router.get("/:slug/related", getRelatedProducts);
 router.get("/:id/download", downloadProductFile);
 router.get("/:slug", getProductBySlug);
 

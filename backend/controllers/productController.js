@@ -1,4 +1,5 @@
 import Product from "../models/Product.js";
+import Review from "../models/Review.js";
 import cloudinary from "../config/cloudinary.js";
 import https from "https";
 import { sanitizeFileName } from "../utils/downloadUrl.js";
@@ -79,6 +80,48 @@ export const getCategories = async (req, res) => {
   try {
     const categories = await Product.distinct("category", { isActive: true });
     res.json(categories);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// @desc Top 5 products from the same category, ranked by average approved
+// rating (ties broken by review count, then sales). Excludes the current product.
+export const getRelatedProducts = async (req, res) => {
+  try {
+    const product = await Product.findOne({ slug: req.params.slug, isActive: true });
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    const candidates = await Product.find({
+      category: product.category,
+      _id: { $ne: product._id },
+      isActive: true,
+    }).select("-digitalFile");
+
+    if (!candidates.length) return res.json([]);
+
+    const ratings = await Review.aggregate([
+      {
+        $match: {
+          status: "approved",
+          product: { $in: candidates.map((p) => p._id) },
+        },
+      },
+      { $group: { _id: "$product", avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+    ]);
+    const ratingMap = new Map(ratings.map((r) => [String(r._id), r]));
+
+    const top = candidates
+      .map((p) => ({
+        p,
+        avg: ratingMap.get(String(p._id))?.avg || 0,
+        count: ratingMap.get(String(p._id))?.count || 0,
+      }))
+      .sort((a, b) => b.avg - a.avg || b.count - a.count || b.p.salesCount - a.p.salesCount)
+      .slice(0, 5)
+      .map(({ p }) => p);
+
+    res.json(top);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
