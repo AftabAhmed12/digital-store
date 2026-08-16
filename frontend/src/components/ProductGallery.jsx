@@ -146,7 +146,7 @@ export default function ProductGallery({ images = [], title, autoSlideDelay = 40
                 i === activeIndex ? "border-gold" : "border-border hover:border-teal"
               }`}
             >
-              <img src={img.url} alt={`${title} thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+              <img src={img.url} alt={`${title} thumbnail ${i + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
@@ -178,6 +178,8 @@ export default function ProductGallery({ images = [], title, autoSlideDelay = 40
                   key={img.publicId || i}
                   src={img.url}
                   alt={`${title} large preview ${i + 1}`}
+                  loading="lazy"
+                  decoding="async"
                   className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-500 ${
                     i === activeIndex ? "opacity-100" : "opacity-0"
                   }`}
