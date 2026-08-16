@@ -75,7 +75,17 @@ export default function AdminProducts() {
               <tr key={p._id} className="border-b border-border last:border-0 hover:bg-ink/40 transition-colors">
                 <td className="p-4">{p.title}</td>
                 <td className="p-4 text-text-muted capitalize">{p.category}</td>
-                <td className="p-4 font-mono">${p.price.toFixed(2)}</td>
+                <td className="p-4 font-mono">
+                  {Number(p.discountPercent) > 0 ? (
+                    <span>
+                      <span className="text-gold">${(p.price * (1 - Number(p.discountPercent) / 100)).toFixed(2)}</span>{" "}
+                      <span className="text-text-faint line-through">${p.price.toFixed(2)}</span>{" "}
+                      <span className="text-[11px] bg-gold/15 text-gold font-bold px-1.5 py-0.5 rounded">{Math.round(p.discountPercent)}%</span>
+                    </span>
+                  ) : (
+                    `$${p.price.toFixed(2)}`
+                  )}
+                </td>
                 <td className="p-4">{p.salesCount}</td>
                 <td className="p-4">{p.isActive ? "Yes" : "No"}</td>
                 <td className="p-4 text-right whitespace-nowrap space-x-3">

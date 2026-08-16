@@ -18,6 +18,10 @@ export default function ProductDetail() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [descExpanded, setDescExpanded] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [coupon, setCoupon] = useState(null); // { code, discount, ... } when applied
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -66,6 +70,26 @@ export default function ProductDetail() {
     };
   }, [product]);
 
+  const discountPercent = Number(product?.discountPercent) || 0;
+  const salePrice = product ? (discountPercent > 0 ? product.price * (1 - discountPercent / 100) : product.price) : 0;
+  const finalPrice = coupon ? Math.max(salePrice - coupon.discount, 0) : salePrice;
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) return;
+    setCouponError("");
+    setCouponLoading(true);
+    try {
+      const res = await api.post("/coupons/validate", { code, productId: product._id });
+      setCoupon(res.data);
+      setCouponInput("");
+    } catch (err) {
+      setCouponError(err.response?.data?.message || "Invalid coupon code");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
   const handleBuy = async (e) => {
     e.preventDefault();
     setError("");
@@ -75,7 +99,11 @@ export default function ProductDetail() {
     }
     setSubmitting(true);
     try {
-      const res = await api.post("/orders/checkout", { productId: product._id, customerEmail: email });
+      const res = await api.post("/orders/checkout", {
+        productId: product._id,
+        customerEmail: email,
+        couponCode: coupon?.code,
+      });
       window.location.href = res.data.url; // redirect to Stripe Checkout
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong. Please try again.");
@@ -132,10 +160,25 @@ export default function ProductDetail() {
           <p className="text-text-muted leading-relaxed mb-6">{product.description}</p>
         )}
 
-<div className="flex items-baseline gap-2 mb-6">
+<div className="flex items-baseline gap-3 mb-6 flex-wrap">
           <span className="font-mono text-gold text-3xl">
-            {product.currency?.toUpperCase()} {product.price?.toFixed(2)}
+            {product.currency?.toUpperCase()} {finalPrice.toFixed(2)}
           </span>
+          {discountPercent > 0 && (
+            <>
+              <span className="font-mono text-text-faint text-xl line-through">
+                {product.currency?.toUpperCase()} {product.price.toFixed(2)}
+              </span>
+              <span className="text-xs bg-gold/15 text-gold font-bold px-2 py-1 rounded-md">
+                {Math.round(discountPercent)}% OFF
+              </span>
+            </>
+          )}
+          {coupon && (
+            <span className="text-xs bg-teal/15 text-teal font-semibold px-2 py-1 rounded-md">
+              − {product.currency?.toUpperCase()} {coupon.discount.toFixed(2)}
+            </span>
+          )}
           <span className="text-text-faint text-sm">one-time payment</span>
         </div>
 
@@ -153,13 +196,56 @@ export default function ProductDetail() {
               className="w-full bg-ink border border-border rounded-lg px-4 py-3 text-sm focus:border-gold outline-none"
             />
           </div>
+
+          {!coupon ? (
+            <div>
+              <label className="block text-sm text-text-muted mb-2">Coupon code (optional)</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  placeholder="e.g. VAULT10"
+                  className="flex-1 bg-ink border border-border rounded-lg px-4 py-3 text-sm uppercase focus:border-gold outline-none min-w-0"
+                />
+                <button
+                  type="button"
+                  onClick={applyCoupon}
+                  disabled={couponLoading || !couponInput.trim()}
+                  className="bg-surface2 border border-border text-text-primary text-sm font-medium px-4 py-3 rounded-lg hover:border-gold/60 transition disabled:opacity-50"
+                >
+                  {couponLoading ? "Checking..." : "Apply"}
+                </button>
+              </div>
+              {couponError && <p className="text-red-400 text-sm mt-2">{couponError}</p>}
+            </div>
+          ) : (
+            <div className="flex items-center justify-between bg-teal/10 border border-teal/30 rounded-lg px-4 py-3">
+              <div>
+                <p className="text-sm font-semibold text-teal">
+                  Coupon {coupon.code} applied — {coupon.type === "percent" ? `${coupon.value}% off` : `${coupon.value.toFixed(2)} ${product.currency?.toUpperCase()} off`}
+                </p>
+                <p className="text-xs text-text-faint mt-0.5">
+                  You save {product.currency?.toUpperCase()} {coupon.discount.toFixed(2)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCoupon(null)}
+                className="text-xs text-text-faint hover:text-red-400 underline transition-colors shrink-0"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <button
             type="submit"
             disabled={submitting}
             className="w-full bg-gold text-ink font-semibold py-3 rounded-lg hover:brightness-110 transition disabled:opacity-60"
           >
-            {submitting ? "Redirecting to checkout..." : `Buy Now — ${product.currency?.toUpperCase()} ${product.price?.toFixed(2)}`}
+            {submitting ? "Redirecting to checkout..." : `Buy Now — ${product.currency?.toUpperCase()} ${finalPrice.toFixed(2)}`}
           </button>
           <p className="text-xs text-text-faint text-center">
             Secure checkout via Stripe. Your product will be emailed instantly after payment.

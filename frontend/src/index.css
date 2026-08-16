@@ -310,3 +310,140 @@
   border-radius: 8px;
   overflow-x: auto;
 }
+
+/* ============ FORM CONTROLS ============
+   Every native control follows the vault theme, and every actionable element
+   gets a pointer cursor + smooth hover/press feedback. Native parts (date
+   pickers, select arrows, scrollbars) follow the active theme via color-scheme. */
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+@layer base {
+  /* Text fields — text, email, number, date, search, etc. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select {
+    background-color: rgb(var(--color-ink));
+    border: 1px solid rgb(var(--color-border));
+    border-radius: 0.5rem;
+    color: rgb(var(--color-text-primary));
+    font-size: 0.875rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):hover,
+  textarea:hover,
+  select:hover {
+    border-color: rgb(var(--color-text-faint) / 0.6);
+  }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+    border-color: rgb(var(--color-gold));
+    box-shadow: 0 0 0 1px rgb(var(--color-gold) / 0.35);
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: rgb(var(--color-text-faint));
+  }
+
+  /* Checkboxes & radio — custom gold controls instead of native */
+  input[type="checkbox"],
+  input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    background-color: rgb(var(--color-ink));
+    border: 1.5px solid rgb(var(--color-border));
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  input[type="radio"] {
+    border-radius: 50%;
+  }
+  input[type="checkbox"]:hover,
+  input[type="radio"]:hover {
+    border-color: rgb(var(--color-gold));
+  }
+  input[type="checkbox"]:checked,
+  input[type="radio"]:checked {
+    background-color: rgb(var(--color-gold));
+    border-color: rgb(var(--color-gold));
+  }
+  input[type="checkbox"]:checked::after {
+    content: "";
+    width: 11px;
+    height: 11px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230B0F19' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+  input[type="radio"]:checked::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgb(var(--color-ink));
+  }
+  input[type="checkbox"]:focus-visible,
+  input[type="radio"]:focus-visible {
+    outline: none;
+    border-color: rgb(var(--color-gold));
+    box-shadow: 0 0 0 1px rgb(var(--color-gold) / 0.4);
+  }
+
+  /* File picker — gold "Choose file" button, themed track */
+  input[type="file"] {
+    cursor: pointer;
+  }
+  input[type="file"]::file-selector-button {
+    background-color: rgb(var(--color-gold));
+    color: rgb(var(--color-ink));
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    margin-right: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+  }
+  input[type="file"]::file-selector-button:hover {
+    filter: brightness(1.1);
+  }
+
+  /* Actionable elements → pointer cursor; disabled → not-allowed; soft hover/press */
+  button:not(:disabled),
+  input[type="submit"]:not(:disabled),
+  input[type="button"]:not(:disabled),
+  label:has(input[type="checkbox"]),
+  label:has(input[type="radio"]),
+  label[for],
+  summary,
+  select,
+  [role="button"],
+  [role="option"] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [disabled] {
+    cursor: not-allowed;
+  }
+  button:not(:disabled):hover {
+    filter: brightness(1.05);
+  }
+  button:not(:disabled):active {
+    transform: translateY(0.5px);
+  }
+}

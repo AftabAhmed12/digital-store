@@ -4,6 +4,8 @@ import ThemeToggle from "../../components/ThemeToggle.jsx";
 const links = [
   { to: "/admin/dashboard", label: "Dashboard" },
   { to: "/admin/products", label: "Products" },
+  { to: "/admin/coupons", label: "Coupons" },
+  { to: "/admin/campaigns", label: "Campaigns" },
   { to: "/admin/blogs", label: "Blogs" },
   { to: "/admin/orders", label: "Orders" },
   { to: "/admin/reviews", label: "Reviews" },

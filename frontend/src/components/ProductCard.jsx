@@ -4,12 +4,22 @@ import { Link } from "react-router-dom";
 // a perforated line separates the preview from the instant-delivery detail,
 // reinforcing that buying = instant email delivery, not a physical shipment.
 export default function ProductCard({ product, compact = false }) {
+  const discountPercent = Number(product.discountPercent) || 0;
+  const hasDiscount = discountPercent > 0;
+  const salePrice = hasDiscount ? product.price * (1 - discountPercent / 100) : product.price;
+  const cur = product.currency?.toUpperCase() || "USD";
+
   return (
     <Link
       to={`/products/${product.slug}`}
       className="group block bg-surface border border-border rounded-xl overflow-hidden hover:border-gold/50 transition-colors"
     >
-      <div className="aspect-[4/3] overflow-hidden bg-surface2">
+      <div className="relative aspect-[4/3] overflow-hidden bg-surface2">
+        {hasDiscount && (
+          <span className="absolute top-2 left-2 z-10 bg-gold text-ink text-[11px] font-bold px-2 py-0.5 rounded-md shadow-sm">
+            {Math.round(discountPercent)}% OFF
+          </span>
+        )}
         {product.images?.[0]?.url ? (
           <img
             src={product.images[0].url}
@@ -42,9 +52,14 @@ export default function ProductCard({ product, compact = false }) {
         </h3>
         {!compact && <p className="text-text-faint text-sm mb-4 line-clamp-2">{product.shortDescription}</p>}
         <div className="flex items-center justify-between">
-          <span className={`font-mono text-gold ${compact ? "text-base" : "text-lg"}`}>
-            {product.currency?.toUpperCase() || "USD"} {product.price?.toFixed(2)}
-          </span>
+          <div className="flex items-baseline gap-2">
+            <span className={`font-mono text-gold ${compact ? "text-base" : "text-lg"}`}>
+              {cur} {salePrice.toFixed(2)}
+            </span>
+            {hasDiscount && (
+              <span className="text-xs text-text-faint line-through">{cur} {product.price.toFixed(2)}</span>
+            )}
+          </div>
           <span className="text-xs text-text-faint flex items-center gap-1">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M4 4h16v16H4z" opacity="0" />

@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import ChatWidget from "./components/ChatWidget.jsx";
+import CampaignBanner from "./components/CampaignBanner.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Loader from "./components/Loader.jsx";
 
@@ -22,6 +23,10 @@ const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.jsx"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard.jsx"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts.jsx"));
 const AdminProductForm = lazy(() => import("./pages/admin/AdminProductForm.jsx"));
+const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons.jsx"));
+const AdminCouponForm = lazy(() => import("./pages/admin/AdminCouponForm.jsx"));
+const AdminCampaigns = lazy(() => import("./pages/admin/AdminCampaigns.jsx"));
+const AdminCampaignForm = lazy(() => import("./pages/admin/AdminCampaignForm.jsx"));
 const AdminBlogs = lazy(() => import("./pages/admin/AdminBlogs.jsx"));
 const AdminBlogForm = lazy(() => import("./pages/admin/AdminBlogForm.jsx"));
 const AdminOrders = lazy(() => import("./pages/admin/AdminOrders.jsx"));
@@ -33,6 +38,7 @@ function PublicLayout({ children }) {
   return (
     <>
       <Navbar />
+      <CampaignBanner />
       <main className="min-h-[70vh]">{children}</main>
       <Footer />
       <ChatWidget />
@@ -68,6 +74,12 @@ export default function App() {
           <Route path="products" element={<AdminProducts />} />
           <Route path="products/new" element={<AdminProductForm />} />
           <Route path="products/:id/edit" element={<AdminProductForm />} />
+          <Route path="coupons" element={<AdminCoupons />} />
+          <Route path="coupons/new" element={<AdminCouponForm />} />
+          <Route path="coupons/:id/edit" element={<AdminCouponForm />} />
+          <Route path="campaigns" element={<AdminCampaigns />} />
+          <Route path="campaigns/new" element={<AdminCampaignForm />} />
+          <Route path="campaigns/:id/edit" element={<AdminCampaignForm />} />
           <Route path="blogs" element={<AdminBlogs />} />
           <Route path="blogs/new" element={<AdminBlogForm />} />
           <Route path="blogs/:id/edit" element={<AdminBlogForm />} />

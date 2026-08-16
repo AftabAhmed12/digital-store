@@ -8,7 +8,7 @@ export default function AdminProductForm() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    title: "", description: "", shortDescription: "", price: "", category: "", currency: "usd", isActive: true,
+    title: "", description: "", shortDescription: "", price: "", category: "", currency: "usd", discountPercent: 0, isActive: true,
   });
   const [existingImages, setExistingImages] = useState([]); // [{url, publicId}] already saved
   const [removedImageIds, setRemovedImageIds] = useState([]); // publicIds marked for deletion
@@ -100,8 +100,11 @@ export default function AdminProductForm() {
         <Field label="Full description">
           <textarea name="description" required rows={4} value={form.description} onChange={handleChange} className="input resize-none" />
         </Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-3 gap-4">
           <Field label="Price (USD)"><input type="number" step="0.01" name="price" required value={form.price} onChange={handleChange} className="input" /></Field>
+          <Field label="Discount % (0–90, optional)">
+            <input type="number" step="1" min="0" max="90" name="discountPercent" value={form.discountPercent} onChange={handleChange} className="input" />
+          </Field>
           <Field label="Category"><input name="category" required value={form.category} onChange={handleChange} className="input" /></Field>
         </div>
 
