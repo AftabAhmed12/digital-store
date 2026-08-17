@@ -14,6 +14,7 @@ const ProductDetail = lazy(() => import("./pages/ProductDetail.jsx"));
 const Blog = lazy(() => import("./pages/Blog.jsx"));
 const BlogDetail = lazy(() => import("./pages/BlogDetail.jsx"));
 const Contact = lazy(() => import("./pages/Contact.jsx"));
+const WriteForUs = lazy(() => import("./pages/WriteForUs.jsx"));
 const Success = lazy(() => import("./pages/Success.jsx"));
 const Cancel = lazy(() => import("./pages/Cancel.jsx"));
 const NotFound = lazy(() => import("./pages/NotFound.jsx"));
@@ -57,6 +58,7 @@ export default function App() {
         <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
         <Route path="/blog/:slug" element={<PublicLayout><BlogDetail /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+        <Route path="/write-for-us" element={<PublicLayout><WriteForUs /></PublicLayout>} />
         <Route path="/order-success" element={<PublicLayout><Success /></PublicLayout>} />
         <Route path="/order-cancelled" element={<PublicLayout><Cancel /></PublicLayout>} />
 
