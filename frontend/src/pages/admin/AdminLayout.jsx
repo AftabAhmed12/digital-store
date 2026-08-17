@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Link, NavLink, useNavigate, Outlet } from "react-router-dom";
 import ThemeToggle from "../../components/ThemeToggle.jsx";
+import Loader from "../../components/Loader.jsx";
 import api from "../../api/axios.js";
 import { canAccess, getAdminInfo } from "../../utils/adminAccess.js";
 import useOnceEffect from "../../hooks/useOnceEffect.js";
@@ -95,7 +96,9 @@ export default function AdminLayout() {
         <div className="md:hidden flex justify-end p-4">
           <ThemeToggle />
         </div>
-        <Outlet />
+        <Suspense fallback={<Loader />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );

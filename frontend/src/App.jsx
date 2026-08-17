@@ -44,7 +44,9 @@ function PublicLayout({ children }) {
     <>
       <Navbar />
       <CampaignBanner />
-      <main className="min-h-[70vh]">{children}</main>
+      <main className="min-h-[70vh]">
+        <Suspense fallback={<Loader />}>{children}</Suspense>
+      </main>
       <Footer />
       <ChatWidget />
     </>
