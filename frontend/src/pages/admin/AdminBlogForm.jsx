@@ -17,8 +17,8 @@ export default function AdminBlogForm() {
 
   useEffect(() => {
     if (isEdit) {
-      api.get("/blogs/admin/all").then((res) => {
-        const blog = res.data.find((b) => b._id === id);
+      api.get(`/blogs/admin/${id}`).then((res) => {
+        const blog = res.data;
         if (blog) setForm({ ...blog });
       });
     }

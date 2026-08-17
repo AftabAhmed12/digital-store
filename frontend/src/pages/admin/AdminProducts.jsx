@@ -3,33 +3,56 @@ import { Link } from "react-router-dom";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import CategoryFilter from "../../components/CategoryFilter.jsx";
+import Pagination from "../../components/Pagination.jsx";
+
+const PAGE_SIZE = 10;
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const load = () => {
+  const load = (p = page) => {
     setLoading(true);
-    api.get("/products/admin/all").then((res) => setProducts(res.data)).finally(() => setLoading(false));
+    const params = { page: p, limit: PAGE_SIZE };
+    if (category) params.category = category;
+    if (search.trim()) params.search = search.trim();
+    api
+      .get("/products/admin/all", { params })
+      .then((res) => {
+        setProducts(res.data.data);
+        setTotal(res.data.total);
+        setTotalPages(res.data.totalPages);
+      })
+      .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  // Categories now come from the API (not client-side) since the table is paginated.
+  useEffect(() => {
+    api.get("/products/categories").then((res) => setCategories(res.data));
+  }, []);
+
+  // Filters always reload from page 1; changing page only refetches that page.
+  useEffect(() => {
+    setPage(1);
+    load(1);
+  }, [category, search]);
+
+  useEffect(() => {
+    if (page !== 1) load(page);
+  }, [page]);
 
   const handleDelete = async (id) => {
     if (!confirm("Delete this product? This cannot be undone.")) return;
     await api.delete(`/products/admin/${id}`);
-    load();
+    if (products.length === 1 && page > 1) setPage((p) => p - 1);
+    else load();
   };
-
-  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))].sort();
-  const q = search.trim().toLowerCase();
-  const filtered = products.filter((p) => {
-    const inCategory = !category || p.category === category;
-    const inSearch = !q || p.title.toLowerCase().includes(q) || (p.category || "").toLowerCase().includes(q);
-    return inCategory && inSearch;
-  });
 
   if (loading) return <Loader />;
 
@@ -71,7 +94,7 @@ export default function AdminProducts() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((p) => (
+            {products.map((p) => (
               <tr key={p._id} className="border-b border-border last:border-0 hover:bg-ink/40 transition-colors">
                 <td className="p-4">{p.title}</td>
                 <td className="p-4 text-text-muted capitalize">{p.category}</td>
@@ -96,7 +119,8 @@ export default function AdminProducts() {
             ))}
           </tbody>
         </table>
-        {filtered.length === 0 && <p className="p-8 text-center text-text-faint">No products found.</p>}
+        {products.length === 0 && <p className="p-8 text-center text-text-faint">No products found.</p>}
+        <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} pageSizeLabel={PAGE_SIZE} />
       </div>
     </div>
   );

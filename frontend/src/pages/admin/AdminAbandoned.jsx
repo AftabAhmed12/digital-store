@@ -2,14 +2,28 @@ import { useEffect, useState } from "react";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import ProductTitleLink from "../../components/ProductTitleLink.jsx";
+import Pagination from "../../components/Pagination.jsx";
+
+const PAGE_SIZE = 10;
 
 export default function AdminAbandoned() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    api.get("/orders/admin/cancelled").then((res) => setOrders(res.data)).finally(() => setLoading(false));
-  }, []);
+    setLoading(true);
+    api
+      .get("/orders/admin/cancelled", { params: { page, limit: PAGE_SIZE } })
+      .then((res) => {
+        setOrders(res.data.data);
+        setTotal(res.data.total);
+        setTotalPages(res.data.totalPages);
+      })
+      .finally(() => setLoading(false));
+  }, [page]);
 
   const copyEmail = (email) => {
     navigator.clipboard?.writeText(email);
@@ -65,6 +79,7 @@ export default function AdminAbandoned() {
         {orders.length === 0 && (
           <p className="p-8 text-center text-text-faint">No abandoned checkouts yet.</p>
         )}
+        <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} pageSizeLabel={PAGE_SIZE} />
       </div>
     </div>
   );

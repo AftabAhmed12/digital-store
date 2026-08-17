@@ -13,8 +13,8 @@ export default function Home() {
 
   useEffect(() => {
     api
-      .get("/products")
-      .then((res) => setFeatured(res.data.slice(0, 6)))
+      .get("/products", { params: { page: 1, limit: 6 } })
+      .then((res) => setFeatured(res.data.data))
       .finally(() => setLoading(false));
   }, []);
 

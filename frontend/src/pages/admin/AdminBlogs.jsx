@@ -3,33 +3,55 @@ import { Link } from "react-router-dom";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import CategoryFilter from "../../components/CategoryFilter.jsx";
+import Pagination from "../../components/Pagination.jsx";
+
+const PAGE_SIZE = 10;
 
 export default function AdminBlogs() {
   const [blogs, setBlogs] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const load = () => {
+  const load = (p = page) => {
     setLoading(true);
-    api.get("/blogs/admin/all").then((res) => setBlogs(res.data)).finally(() => setLoading(false));
+    const params = { page: p, limit: PAGE_SIZE };
+    if (category) params.category = category;
+    if (search.trim()) params.search = search.trim();
+    api
+      .get("/blogs/admin/all", { params })
+      .then((res) => {
+        setBlogs(res.data.data);
+        setTotal(res.data.total);
+        setTotalPages(res.data.totalPages);
+      })
+      .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(() => {
+    api.get("/blogs/categories").then((res) => setCategories(res.data));
+  }, []);
+
+  // Filters always reload from page 1; changing page only refetches that page.
+  useEffect(() => {
+    setPage(1);
+    load(1);
+  }, [category, search]);
+
+  useEffect(() => {
+    if (page !== 1) load(page);
+  }, [page]);
 
   const handleDelete = async (id) => {
     if (!confirm("Delete this blog post?")) return;
     await api.delete(`/blogs/admin/${id}`);
-    load();
+    if (blogs.length === 1 && page > 1) setPage((p) => p - 1);
+    else load();
   };
-
-  const categories = [...new Set(blogs.map((b) => b.category).filter(Boolean))].sort();
-  const q = search.trim().toLowerCase();
-  const filtered = blogs.filter((b) => {
-    const inCategory = !category || b.category === category;
-    const inSearch = !q || b.title.toLowerCase().includes(q) || (b.category || "").toLowerCase().includes(q);
-    return inCategory && inSearch;
-  });
 
   if (loading) return <Loader />;
 
@@ -70,7 +92,7 @@ export default function AdminBlogs() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((b) => (
+            {blogs.map((b) => (
               <tr key={b._id} className="border-b border-border last:border-0 hover:bg-ink/40 transition-colors">
                 <td className="p-4">{b.title}</td>
                 <td className="p-4 text-text-muted capitalize">{b.category}</td>
@@ -84,7 +106,8 @@ export default function AdminBlogs() {
             ))}
           </tbody>
         </table>
-        {filtered.length === 0 && <p className="p-8 text-center text-text-faint">No blog posts found.</p>}
+        {blogs.length === 0 && <p className="p-8 text-center text-text-faint">No blog posts found.</p>}
+        <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} pageSizeLabel={PAGE_SIZE} />
       </div>
     </div>
   );

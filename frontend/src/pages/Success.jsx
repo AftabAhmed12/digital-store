@@ -50,7 +50,7 @@ export default function Success() {
       ) : (
         <p className="text-text-muted mb-8">Your payment was successful. Check your email for the download link.</p>
       )}
-      <Link to="/products" className="inline-block bg-gold text-ink font-semibold px-6 py-3 rounded-lg hover:brightness-110 transition">
+      <Link to="/products?continue=1" className="inline-block bg-gold text-ink font-semibold px-6 py-3 rounded-lg hover:brightness-110 transition">
         Continue Shopping
       </Link>
     </div>

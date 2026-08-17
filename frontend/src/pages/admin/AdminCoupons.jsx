@@ -2,19 +2,32 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
+import Pagination from "../../components/Pagination.jsx";
 
 const fmtMoney = (v) => (Number(v) || 0).toFixed(2);
+
+const PAGE_SIZE = 10;
 
 export default function AdminCoupons() {
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const load = () => {
+  const load = (p = page) => {
     setLoading(true);
-    api.get("/coupons/admin/all").then((res) => setCoupons(res.data)).finally(() => setLoading(false));
+    api
+      .get("/coupons/admin/all", { params: { page: p, limit: PAGE_SIZE } })
+      .then((res) => {
+        setCoupons(res.data.data);
+        setTotal(res.data.total);
+        setTotalPages(res.data.totalPages);
+      })
+      .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(load, [page]);
 
   const handleDelete = async (c) => {
     if (!confirm(`Delete coupon ${c.code}? This cannot be undone.`)) return;
@@ -104,6 +117,7 @@ export default function AdminCoupons() {
           </tbody>
         </table>
         {coupons.length === 0 && <p className="p-8 text-center text-text-faint">No coupons yet. Create your first one!</p>}
+        <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} pageSizeLabel={PAGE_SIZE} />
       </div>
     </div>
   );

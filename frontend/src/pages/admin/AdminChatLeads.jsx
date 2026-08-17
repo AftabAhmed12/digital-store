@@ -1,14 +1,28 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
+import Pagination from "../../components/Pagination.jsx";
+
+const PAGE_SIZE = 10;
 
 export default function AdminChatLeads() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    api.get("/chat/admin/leads").then((res) => setLeads(res.data)).finally(() => setLoading(false));
-  }, []);
+    setLoading(true);
+    api
+      .get("/chat/admin/leads", { params: { page, limit: PAGE_SIZE } })
+      .then((res) => {
+        setLeads(res.data.data);
+        setTotal(res.data.total);
+        setTotalPages(res.data.totalPages);
+      })
+      .finally(() => setLoading(false));
+  }, [page]);
 
   const copyEmail = (email) => {
     navigator.clipboard?.writeText(email);
@@ -66,6 +80,7 @@ export default function AdminChatLeads() {
         {leads.length === 0 && (
           <p className="p-8 text-center text-text-faint">No chat leads yet — visitors have to open the chat widget on your site.</p>
         )}
+        <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} pageSizeLabel={PAGE_SIZE} />
       </div>
     </div>
   );

@@ -6,30 +6,67 @@ import { useEffect, useRef, useState } from "react";
 // sorted A→Z. Page height stays constant regardless of category count.
 export default function CategoryFilter({ categories = [], active = "", onChange, label = "All Categories" }) {
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef(null);
+  const timerRef = useRef(null);
 
   const sorted = [...categories].sort((a, b) => a.localeCompare(b));
   const filtered = sorted.filter((c) => c.toLowerCase().includes(query.trim().toLowerCase()));
 
-  useEffect(() => {
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  // Close with a smooth exit animation — used by scroll, outside click & Escape.
+  const hide = () => {
     if (!open) return;
+    setClosing(true);
+    timerRef.current = setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+      setQuery("");
+    }, 150);
+  };
+
+  const toggle = () => {
+    if (open || closing) {
+      hide();
+    } else {
+      clearTimeout(timerRef.current);
+      setClosing(false);
+      setOpen(true);
+      setQuery("");
+    }
+  };
+
+  useEffect(() => {
+    if (!open && !closing) return;
     const onKey = (e) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") hide();
     };
     const onClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target)) hide();
+    };
+    // Capture-phase scroll listener catches window AND nested container scrolls,
+    // so the listbox hides whenever the page moves under it — but never when the
+    // user scrolls inside the dropdown's own scroller.
+    const onScroll = (e) => {
+      if (ref.current && ref.current.contains(e.target)) return;
+      hide();
     };
     document.addEventListener("mousedown", onClickOutside);
     document.addEventListener("keydown", onKey);
+    document.addEventListener("scroll", onScroll, { capture: true, passive: true });
     return () => {
       document.removeEventListener("mousedown", onClickOutside);
       document.removeEventListener("keydown", onKey);
+      document.removeEventListener("scroll", onScroll, { capture: true });
     };
-  }, [open]);
+  }, [open, closing]);
 
   const select = (cat) => {
     onChange(cat);
+    clearTimeout(timerRef.current);
+    setClosing(false);
     setOpen(false);
     setQuery("");
   };
@@ -40,10 +77,7 @@ export default function CategoryFilter({ categories = [], active = "", onChange,
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        onClick={() => {
-          setOpen((o) => !o);
-          setQuery("");
-        }}
+        onClick={toggle}
         className={`px-4 py-2.5 rounded-lg text-sm border flex items-center gap-2 transition-colors ${
           active
             ? "bg-gold text-ink border-gold font-medium"
@@ -67,8 +101,13 @@ export default function CategoryFilter({ categories = [], active = "", onChange,
         </svg>
       </button>
 
-      {open && (
-        <div className="absolute left-0 top-full mt-2 w-72 z-30 bg-surface border border-border rounded-xl shadow-2xl overflow-hidden">
+      {(open || closing) && (
+        <div
+          aria-hidden={!open}
+          className={`absolute left-0 top-full mt-2 w-72 z-30 bg-surface border border-border rounded-xl shadow-2xl overflow-hidden dropdown-anim ${
+            closing ? "dropdown-closing" : ""
+          }`}
+        >
           <div className="p-3 border-b border-border">
             <div className="relative">
               <svg

@@ -4,6 +4,9 @@ import Loader from "../../components/Loader.jsx";
 import Modal from "../../components/Modal.jsx";
 import ProductTitleLink from "../../components/ProductTitleLink.jsx";
 import { Stars } from "../../components/ProductReviews.jsx";
+import Pagination from "../../components/Pagination.jsx";
+
+const PAGE_SIZE = 10;
 
 const statusColors = {
   pending: "bg-yellow-500/10 text-yellow-400",
@@ -18,18 +21,42 @@ function StatusBadge({ status }) {
 // Themed dropdown — replaces the native select so options can have proper hover effects
 function ThemedSelect({ value, onChange, options, placeholder }) {
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const ref = useRef(null);
+  const timerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
+
+  const hide = () => {
+    if (!open) return;
+    setClosing(true);
+    timerRef.current = setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+    }, 150);
+  };
 
   useEffect(() => {
+    if (!open && !closing) return;
     const close = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target)) hide();
+    };
+    const onScroll = (e) => {
+      if (ref.current && ref.current.contains(e.target)) return;
+      hide();
     };
     document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, []);
+    document.addEventListener("scroll", onScroll, { capture: true, passive: true });
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("scroll", onScroll, { capture: true });
+    };
+  }, [open, closing]);
 
   const select = (val) => {
     onChange(val);
+    clearTimeout(timerRef.current);
+    setClosing(false);
     setOpen(false);
   };
 
@@ -37,7 +64,15 @@ function ThemedSelect({ value, onChange, options, placeholder }) {
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          if (open || closing) {
+            hide();
+          } else {
+            clearTimeout(timerRef.current);
+            setClosing(false);
+            setOpen(true);
+          }
+        }}
         className={`flex items-center justify-between gap-3 w-full md:w-56 bg-surface border rounded-lg px-4 py-2.5 text-sm transition-colors outline-none ${
           open ? "border-gold" : "border-border hover:border-teal"
         }`}
@@ -56,8 +91,13 @@ function ThemedSelect({ value, onChange, options, placeholder }) {
         </svg>
       </button>
 
-      {open && (
-        <div className="absolute z-20 mt-2 w-full min-w-[13rem] bg-surface border border-border rounded-xl shadow-xl overflow-hidden">
+      {(open || closing) && (
+        <div
+          aria-hidden={!open}
+          className={`absolute z-20 mt-2 w-full min-w-[13rem] bg-surface border border-border rounded-xl shadow-xl overflow-hidden dropdown-anim ${
+            closing ? "dropdown-closing" : ""
+          }`}
+        >
           <button
             type="button"
             onClick={() => select("")}
@@ -146,16 +186,23 @@ export default function AdminReviews() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const load = () => {
+  const load = (p = page) => {
     setLoading(true);
-    const params = {};
+    const params = { page: p, limit: PAGE_SIZE };
     if (category) params.category = category;
     if (status) params.status = status;
     if (search.trim()) params.search = search.trim();
     api
       .get("/reviews/admin/all", { params })
-      .then((res) => setReviews(res.data))
+      .then((res) => {
+        setReviews(res.data.data);
+        setTotal(res.data.total);
+        setTotalPages(res.data.totalPages);
+      })
       .finally(() => setLoading(false));
   };
 
@@ -163,7 +210,15 @@ export default function AdminReviews() {
     api.get("/products/categories").then((res) => setCategories(res.data));
   }, []);
 
-  useEffect(load, [category, status, search]);
+  // Filters always reload from page 1; changing page only refetches that page.
+  useEffect(() => {
+    setPage(1);
+    load(1);
+  }, [category, status, search]);
+
+  useEffect(() => {
+    if (page !== 1) load(page);
+  }, [page]);
 
   const handleApprove = async (id) => {
     await api.put(`/reviews/admin/${id}`, { status: "approved" });
@@ -188,7 +243,7 @@ export default function AdminReviews() {
     <div className="container-px py-10 max-w-6xl">
       <div className="flex items-center justify-between mb-2">
         <h1 className="font-display font-700 text-2xl">Reviews</h1>
-        <span className="text-xs text-text-faint font-mono">{reviews.length} shown</span>
+        <span className="text-xs text-text-faint font-mono">{total} total</span>
       </div>
       <p className="text-text-faint text-sm mb-8">
         Customer reviews need approval before they appear on the product page.
@@ -285,6 +340,7 @@ export default function AdminReviews() {
           {reviews.length === 0 && (
             <p className="p-8 text-center text-text-faint">No reviews match your filters yet.</p>
           )}
+          <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} pageSizeLabel={PAGE_SIZE} />
           </>
         )}
       </div>

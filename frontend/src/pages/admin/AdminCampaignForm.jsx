@@ -21,13 +21,13 @@ export default function AdminCampaignForm() {
 
   useEffect(() => {
     Promise.all([
-      api.get("/products/admin/all"),
-      isEdit ? api.get("/campaigns/admin/all") : Promise.resolve({ data: [] }),
+      api.get("/products/admin/all", { params: { page: 1, limit: 10000 } }),
+      isEdit ? api.get("/campaigns/admin/all", { params: { page: 1, limit: 10000 } }) : Promise.resolve({ data: { data: [] } }),
     ])
       .then(([prodRes, campRes]) => {
-        setProducts(prodRes.data);
+        setProducts(prodRes.data.data);
         if (isEdit) {
-          const c = campRes.data.find((x) => x._id === id);
+          const c = campRes.data.data.find((x) => x._id === id);
           if (c) {
             setForm({
               title: c.title,

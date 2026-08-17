@@ -8,22 +8,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      api.get("/orders/admin/all"),
-      api.get("/products/admin/all"),
-      api.get("/blogs/admin/all"),
-    ]).then(([orders, products, blogs]) => {
-      const paidOrders = orders.data.filter((o) => o.status === "email_sent" || o.status === "paid");
-      const revenue = paidOrders.reduce((sum, o) => sum + o.amount, 0) / 100;
-      setStats({
-        totalOrders: orders.data.length,
-        paidOrders: paidOrders.length,
-        revenue,
-        totalProducts: products.data.length,
-        totalBlogs: blogs.data.length,
-        recentOrders: orders.data.slice(0, 5),
-      });
-    }).finally(() => setLoading(false));
+    api
+      .get("/admin/stats")
+      .then((res) => setStats(res.data))
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <Loader />;

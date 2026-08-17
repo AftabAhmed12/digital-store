@@ -19,13 +19,13 @@ export default function AdminCouponForm() {
 
   useEffect(() => {
     Promise.all([
-      api.get("/products/admin/all"),
-      isEdit ? api.get("/coupons/admin/all") : Promise.resolve({ data: [] }),
+      api.get("/products/admin/all", { params: { page: 1, limit: 10000 } }),
+      isEdit ? api.get("/coupons/admin/all", { params: { page: 1, limit: 10000 } }) : Promise.resolve({ data: { data: [] } }),
     ])
       .then(([prodRes, couponRes]) => {
-        setProducts(prodRes.data);
+        setProducts(prodRes.data.data);
         if (isEdit) {
-          const c = couponRes.data.find((x) => x._id === id);
+          const c = couponRes.data.data.find((x) => x._id === id);
           if (c) {
             setForm({
               code: c.code,

@@ -3,18 +3,31 @@ import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import { StatusBadge } from "./AdminDashboard.jsx";
 import ProductTitleLink from "../../components/ProductTitleLink.jsx";
+import Pagination from "../../components/Pagination.jsx";
+
+const PAGE_SIZE = 10;
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resending, setResending] = useState(null);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const load = () => {
+  const load = (p = page) => {
     setLoading(true);
-    api.get("/orders/admin/all").then((res) => setOrders(res.data)).finally(() => setLoading(false));
+    api
+      .get("/orders/admin/all", { params: { page: p, limit: PAGE_SIZE } })
+      .then((res) => {
+        setOrders(res.data.data);
+        setTotal(res.data.total);
+        setTotalPages(res.data.totalPages);
+      })
+      .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(load, [page]);
 
   const handleResend = async (id) => {
     setResending(id);
@@ -79,6 +92,7 @@ export default function AdminOrders() {
           </tbody>
         </table>
         {orders.length === 0 && <p className="p-8 text-center text-text-faint">No orders yet.</p>}
+        <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} pageSizeLabel={PAGE_SIZE} />
       </div>
     </div>
   );

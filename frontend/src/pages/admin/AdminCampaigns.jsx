@@ -2,17 +2,30 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
+import Pagination from "../../components/Pagination.jsx";
+
+const PAGE_SIZE = 10;
 
 export default function AdminCampaigns() {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const load = () => {
+  const load = (p = page) => {
     setLoading(true);
-    api.get("/campaigns/admin/all").then((res) => setCampaigns(res.data)).finally(() => setLoading(false));
+    api
+      .get("/campaigns/admin/all", { params: { page: p, limit: PAGE_SIZE } })
+      .then((res) => {
+        setCampaigns(res.data.data);
+        setTotal(res.data.total);
+        setTotalPages(res.data.totalPages);
+      })
+      .finally(() => setLoading(false));
   };
 
-  useEffect(load, []);
+  useEffect(load, [page]);
 
   const handleDelete = async (c) => {
     if (!confirm(`Delete campaign "${c.title}" and its coupon ${c.coupon?.code}? This cannot be undone.`)) return;
@@ -104,6 +117,7 @@ export default function AdminCampaigns() {
           </tbody>
         </table>
         {campaigns.length === 0 && <p className="p-8 text-center text-text-faint">No campaigns yet. Create your first one!</p>}
+        <Pagination page={page} totalPages={totalPages} total={total} onChange={setPage} pageSizeLabel={PAGE_SIZE} />
       </div>
     </div>
   );

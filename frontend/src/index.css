@@ -198,6 +198,54 @@
   background-color: rgb(var(--color-gold));
 }
 
+/* Dropdown (combobox) open/close — smooth pop transition so closing on scroll
+   feels soft instead of a hard snap. */
+@keyframes dropdown-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes dropdown-pop-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+}
+.dropdown-anim {
+  animation: dropdown-pop-in 0.18s ease;
+  transform-origin: top left;
+}
+.dropdown-anim.dropdown-closing {
+  animation: dropdown-pop-out 0.15s ease forwards;
+}
+
+/* Floating "back to top" button */
+@keyframes back-to-top-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.back-to-top {
+  animation: back-to-top-in 0.25s ease;
+}
+.back-to-top.closing {
+  animation: back-to-top-in 0.25s ease reverse forwards;
+}
+
 @layer components {
   .input {
     @apply w-full bg-ink border border-border rounded-lg px-4 py-3 text-sm focus:border-gold outline-none;

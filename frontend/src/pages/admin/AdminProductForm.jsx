@@ -19,8 +19,8 @@ export default function AdminProductForm() {
 
   useEffect(() => {
     if (isEdit) {
-      api.get("/products/admin/all").then((res) => {
-        const product = res.data.find((p) => p._id === id);
+      api.get(`/products/admin/${id}`).then((res) => {
+        const product = res.data;
         if (product) {
           setForm({ ...product });
           setExistingImages(product.images || []);
