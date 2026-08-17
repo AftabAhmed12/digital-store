@@ -17,7 +17,7 @@ const benefits = [
   },
   {
     title: "Earn a dofollow backlink",
-    desc: "Every accepted post includes an author bio with a dofollow link to your website, portfolio, or blog — a real SEO asset that helps your own rankings.",
+    desc: "Every accepted post includes one dofollow link to your website, portfolio, or blog, placed naturally inside the article where it adds real SEO value for your own rankings.",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -121,8 +121,8 @@ const guidelines = [
     desc: "No fluff, no keyword stuffing, no AI-generated filler. We will lightly edit for clarity, grammar, and SEO.",
   },
   {
-    title: "Author bio + headshot",
-    desc: "Include a 50–80 word bio and a professional photo. Your bio is where your dofollow link lives.",
+    title: "Author byline",
+    desc: "Send the author name you'd like displayed — every published post is credited with an author byline at the top.",
   },
 ];
 
@@ -138,7 +138,7 @@ const rejected = [
 const linkPolicy = [
   {
     title: "One dofollow link",
-    desc: "Each article earns one dofollow link in the author bio or within the body, pointing to a relevant page on your site.",
+    desc: "Each article earns one dofollow link within the article body, pointing to a relevant page on your website, portfolio, or blog.",
   },
   {
     title: "Relevance is everything",
@@ -163,18 +163,18 @@ const steps = [
   { num: "02", title: "Check the blog first", desc: "Browse our recent posts to confirm we haven't already covered your exact angle." },
   { num: "03", title: "Send your pitch", desc: "Use the form below with a proposed title, a short outline, and a little about you." },
   { num: "04", title: "We review it", desc: "Our editors respond within 3–5 business days with a yes, no, or suggestions." },
-  { num: "05", title: "Draft & submit", desc: "Once approved, write the full article and send it with your bio and headshot." },
+  { num: "05", title: "Draft & submit", desc: "Once approved, write the full article and send it with the author name you'd like credited on the byline." },
   { num: "06", title: "We publish & promote", desc: "After light editing, your post goes live with a dofollow link and social promotion." },
 ];
 
 const faqs = [
   {
     q: "Do you pay guest contributors?",
-    a: "We don't pay for guest posts, but every published article includes a dofollow backlink in your author bio and exposure to our audience of digital product buyers and online sellers.",
+    a: "We believe in fair, value-driven partnerships with our writers. Compensation for a guest contribution is discussed on a case-by-case basis after we review your pitch — the details depend on the topic, scope, and the value the article brings to our readers.",
   },
   {
     q: "Can I include a link to my website in my post?",
-    a: "Yes — each accepted post earns one dofollow link in the author bio or in the body, as long as it's relevant to the article and adds value for the reader.",
+    a: "Yes — each accepted post earns one dofollow link within the article, as long as it's relevant to the topic and adds value for the reader.",
   },
   {
     q: "How long should my guest post be?",
@@ -251,7 +251,7 @@ export default function WriteForUs() {
     <div className="container-px max-w-6xl mx-auto py-16 md:py-24">
       <Seo
         title="Write for Us — Contribute a Guest Post to the Vaultly Blog"
-        description="Write for us and share your expertise on digital products, templates, ecommerce, and online business. We accept original guest posts with a dofollow link in the author bio. Submit your pitch today."
+        description="Write for us and share your expertise on digital products, templates, ecommerce, and online business. We accept original guest posts with a dofollow link in the article. Submit your pitch today."
         jsonLd={faqJsonLd}
       />
 
@@ -267,7 +267,7 @@ export default function WriteForUs() {
           <p className="text-text-muted max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
             We're looking for writers who can share practical, original insights on digital products,
             templates, ecommerce, and online business. Get published on a fast, modern blog — with a
-            dofollow link in your author bio.
+            dofollow link in your article.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a href="#pitch-form" className="inline-flex items-center gap-2 bg-gold text-ink font-semibold px-6 py-3 rounded-xl hover:brightness-110 transition">
@@ -339,7 +339,7 @@ export default function WriteForUs() {
                 ["Delivery", "Instant digital downloads"],
                 ["Focus", "Digital products & online business"],
                 ["Audience", "Buyers, creators, and sellers"],
-                ["Backlink", "Dofollow in author bio"],
+                ["Backlink", "Dofollow link in post"],
                 ["Review time", "3–5 business days"],
               ].map(([k, v]) => (
                 <div key={k} className="flex items-center justify-between gap-4">
