@@ -6,7 +6,7 @@ import Loader from "../components/Loader.jsx";
 import Seo from "../components/Seo.jsx";
 import CategoryFilter from "../components/CategoryFilter.jsx";
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 12;
 
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -168,9 +168,9 @@ export default function Products() {
         <p className="text-text-faint py-20 text-center">No products found.</p>
       ) : (
         <>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
             {products.map((p) => (
-              <ProductCard key={p._id} product={p} />
+              <ProductCard key={p._id} product={p} compact />
             ))}
           </div>
 

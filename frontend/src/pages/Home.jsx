@@ -13,7 +13,7 @@ export default function Home() {
 
   useEffect(() => {
     api
-      .get("/products", { params: { page: 1, limit: 6 } })
+      .get("/products", { params: { page: 1, limit: 8 } })
       .then((res) => setFeatured(res.data.data))
       .finally(() => setLoading(false));
   }, []);
@@ -102,9 +102,9 @@ export default function Home() {
         ) : featured.length === 0 ? (
           <p className="text-text-faint">No products yet — check back soon.</p>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
             {featured.map((p) => (
-              <ProductCard key={p._id} product={p} />
+              <ProductCard key={p._id} product={p} compact />
             ))}
           </div>
         )}

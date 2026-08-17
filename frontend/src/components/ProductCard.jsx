@@ -51,7 +51,7 @@ export default function ProductCard({ product, compact = false }) {
           {product.title}
         </h3>
         {!compact && <p className="text-text-faint text-sm mb-4 line-clamp-2">{product.shortDescription}</p>}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
           <div className="flex items-baseline gap-2">
             <span className={`font-mono text-gold ${compact ? "text-base" : "text-lg"}`}>
               {cur} {salePrice.toFixed(2)}
