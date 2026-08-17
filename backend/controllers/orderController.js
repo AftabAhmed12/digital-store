@@ -7,6 +7,7 @@ import { orderDeliveryTemplate } from "../utils/emailTemplate.js";
 import { buildDownloadUrl } from "../utils/downloadUrl.js";
 import { salePriceFor } from "../utils/pricing.js";
 import { resolveCouponDiscount } from "./couponController.js";
+import { getPagination, paginated } from "../utils/paginate.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -177,17 +178,32 @@ export const fulfillOrder = async (session) => {
 // ---------- ADMIN ----------
 
 export const adminGetOrders = async (req, res) => {
-  const orders = await Order.find().populate("product", "title slug").sort({ createdAt: -1 });
-  res.json(orders);
+  const { page, limit, skip } = getPagination(req, { limit: 10 });
+  const [orders, total] = await Promise.all([
+    Order.find()
+      .populate("product", "title slug")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Order.countDocuments(),
+  ]);
+  res.json(paginated(orders, total, page, limit));
 };
 
 // Abandoned / cancelled checkouts — who tried to pay for what and when,
 // so the admin can approach them later. Sorted by most recent attempt.
 export const adminGetCancelledOrders = async (req, res) => {
-  const orders = await Order.find({ status: "cancelled" })
-    .populate("product", "title slug")
-    .sort({ createdAt: -1 });
-  res.json(orders);
+  const filter = { status: "cancelled" };
+  const { page, limit, skip } = getPagination(req, { limit: 10 });
+  const [orders, total] = await Promise.all([
+    Order.find(filter)
+      .populate("product", "title slug")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Order.countDocuments(filter),
+  ]);
+  res.json(paginated(orders, total, page, limit));
 };
 
 // Admin can manually resend the delivery email (e.g. if it bounced)

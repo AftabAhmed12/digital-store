@@ -5,6 +5,7 @@ import {
   getCategories,
   getRelatedProducts,
   adminGetProducts,
+  adminGetProductById,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -43,6 +44,7 @@ router.get("/:slug", getProductBySlug);
 
 // Admin
 router.get("/admin/all", protectAdmin, adminGetProducts);
+router.get("/admin/:id", protectAdmin, adminGetProductById);
 router.post("/admin", protectAdmin, uploadProductFiles, createProduct);
 router.put("/admin/:id", protectAdmin, uploadProductFiles, updateProduct);
 router.delete("/admin/:id", protectAdmin, deleteProduct);

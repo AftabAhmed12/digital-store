@@ -1,6 +1,7 @@
 import Coupon from "../models/Coupon.js";
 import Product from "../models/Product.js";
 import { salePriceFor } from "../utils/pricing.js";
+import { getPagination, paginated } from "../utils/paginate.js";
 
 // Shared coupon validation used by BOTH the public /validate endpoint and the
 // checkout flow. Returns { error } or { coupon, discount } where discount is the
@@ -75,8 +76,16 @@ export const validateCoupon = async (req, res) => {
 // ---------- ADMIN ----------
 
 export const adminGetCoupons = async (req, res) => {
-  const coupons = await Coupon.find().populate("products", "title slug").sort({ createdAt: -1 });
-  res.json(coupons);
+  const { page, limit, skip } = getPagination(req, { limit: 10 });
+  const [coupons, total] = await Promise.all([
+    Coupon.find()
+      .populate("products", "title slug")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Coupon.countDocuments(),
+  ]);
+  res.json(paginated(coupons, total, page, limit));
 };
 
 const normalizeInput = (body) => {

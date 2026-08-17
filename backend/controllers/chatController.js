@@ -1,6 +1,7 @@
 import ChatLead from "../models/ChatLead.js";
 import Product from "../models/Product.js";
 import Blog from "../models/Blog.js";
+import { getPagination, paginated } from "../utils/paginate.js";
 
 // ---------- Small "brain" ----------
 
@@ -387,6 +388,10 @@ export const chatMessage = async (req, res) => {
 // ---------- ADMIN ----------
 
 export const adminGetChatLeads = async (req, res) => {
-  const leads = await ChatLead.find().sort({ lastSeenAt: -1 }).limit(500);
-  res.json(leads);
+  const { page, limit, skip } = getPagination(req, { limit: 10 });
+  const [leads, total] = await Promise.all([
+    ChatLead.find().sort({ lastSeenAt: -1 }).skip(skip).limit(limit),
+    ChatLead.countDocuments(),
+  ]);
+  res.json(paginated(leads, total, page, limit));
 };

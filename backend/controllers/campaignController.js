@@ -1,6 +1,7 @@
 import Campaign from "../models/Campaign.js";
 import Coupon from "../models/Coupon.js";
 import cloudinary from "../config/cloudinary.js";
+import { getPagination, paginated } from "../utils/paginate.js";
 
 // Helper: toBool accepts real booleans AND the "true"/"false" strings that
 // multipart/form-data sends. Using Boolean("false") would return true — a bug.
@@ -50,10 +51,16 @@ export const getActiveCampaigns = async (req, res) => {
 // ---------- ADMIN ----------
 
 export const adminGetCampaigns = async (req, res) => {
-  const campaigns = await Campaign.find()
-    .populate("coupon", "code type value appliesToAll products appliesToCategories expiresAt usedCount isActive")
-    .sort({ createdAt: -1 });
-  res.json(campaigns);
+  const { page, limit, skip } = getPagination(req, { limit: 10 });
+  const [campaigns, total] = await Promise.all([
+    Campaign.find()
+      .populate("coupon", "code type value appliesToAll products appliesToCategories expiresAt usedCount isActive")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Campaign.countDocuments(),
+  ]);
+  res.json(paginated(campaigns, total, page, limit));
 };
 
 export const createCampaign = async (req, res) => {

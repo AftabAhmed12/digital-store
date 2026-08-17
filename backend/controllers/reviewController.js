@@ -1,5 +1,6 @@
 import Review from "../models/Review.js";
 import Product from "../models/Product.js";
+import { getPagination, paginated } from "../utils/paginate.js";
 
 // @desc Submit a public review (no login required, always pending approval)
 export const createReview = async (req, res) => {
@@ -67,10 +68,16 @@ export const adminGetReviews = async (req, res) => {
       const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
       filter.$or = [{ name: rx }, { email: rx }, { comment: rx }, { productTitle: rx }, { title: rx }];
     }
-    const reviews = await Review.find(filter)
-      .populate("product", "slug")
-      .sort({ createdAt: -1 });
-    res.json(reviews);
+    const { page, limit, skip } = getPagination(req, { limit: 10 });
+    const [reviews, total] = await Promise.all([
+      Review.find(filter)
+        .populate("product", "slug")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Review.countDocuments(filter),
+    ]);
+    res.json(paginated(reviews, total, page, limit));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

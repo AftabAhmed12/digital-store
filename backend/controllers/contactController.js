@@ -1,6 +1,7 @@
 import Contact from "../models/Contact.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { contactNotificationTemplate } from "../utils/emailTemplate.js";
+import { getPagination, paginated } from "../utils/paginate.js";
 
 export const submitContactForm = async (req, res) => {
   try {
@@ -21,8 +22,12 @@ export const submitContactForm = async (req, res) => {
 };
 
 export const adminGetContacts = async (req, res) => {
-  const contacts = await Contact.find().sort({ createdAt: -1 });
-  res.json(contacts);
+  const { page, limit, skip } = getPagination(req, { limit: 10 });
+  const [contacts, total] = await Promise.all([
+    Contact.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Contact.countDocuments(),
+  ]);
+  res.json(paginated(contacts, total, page, limit));
 };
 
 export const markContactRead = async (req, res) => {

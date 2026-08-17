@@ -1,4 +1,7 @@
 import Admin from "../models/Admin.js";
+import Order from "../models/Order.js";
+import Product from "../models/Product.js";
+import Blog from "../models/Blog.js";
 import generateToken from "../utils/generateToken.js";
 
 // @desc Login admin
@@ -21,6 +24,40 @@ export const loginAdmin = async (req, res) => {
 // @desc Get current logged in admin
 export const getAdminProfile = async (req, res) => {
   res.json(req.admin);
+};
+
+// @desc Dashboard stats — aggregated server-side so the admin never downloads
+// the entire collection just to render a few numbers and the latest orders.
+export const getAdminStats = async (req, res) => {
+  try {
+    const [totalOrders, paidOrders, revenueAgg, totalProducts, totalBlogs, recentOrders] =
+      await Promise.all([
+        Order.countDocuments(),
+        Order.countDocuments({ status: { $in: ["paid", "email_sent"] } }),
+        Order.aggregate([
+          { $match: { status: { $in: ["paid", "email_sent"] } } },
+          { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]),
+        Product.countDocuments(),
+        Blog.countDocuments(),
+        Order.find()
+          .populate("product", "title slug")
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .lean(),
+      ]);
+
+    res.json({
+      totalOrders,
+      paidOrders,
+      revenue: (revenueAgg[0]?.total || 0) / 100,
+      totalProducts,
+      totalBlogs,
+      recentOrders,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 // @desc One-time setup route to create the first admin account.

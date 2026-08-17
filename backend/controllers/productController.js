@@ -3,6 +3,7 @@ import Review from "../models/Review.js";
 import cloudinary from "../config/cloudinary.js";
 import https from "https";
 import { sanitizeFileName } from "../utils/downloadUrl.js";
+import { getPagination, paginated } from "../utils/paginate.js";
 
 // The digital product file must always be a PDF (delivery is PDF-only)
 const isPdf = (file) => {
@@ -10,7 +11,7 @@ const isPdf = (file) => {
   return /\.pdf$/i.test(file.originalname || "") || file.mimetype === "application/pdf";
 };
 
-// @desc Get all active products (public) - supports ?category= & ?search=
+// @desc Get active products (public) - supports ?category=, ?search=, ?page=, ?limit=
 export const getProducts = async (req, res) => {
   try {
     const { category, search } = req.query;
@@ -18,10 +19,16 @@ export const getProducts = async (req, res) => {
     if (category) filter.category = category;
     if (search) filter.$text = { $search: search };
 
-    const products = await Product.find(filter)
-      .select("-digitalFile")
-      .sort({ createdAt: -1 });
-    res.json(products);
+    const { page, limit, skip } = getPagination(req, { limit: 9 });
+    const [products, total] = await Promise.all([
+      Product.find(filter)
+        .select("-digitalFile")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Product.countDocuments(filter),
+    ]);
+    res.json(paginated(products, total, page, limit));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -130,8 +137,33 @@ export const getRelatedProducts = async (req, res) => {
 // ---------- ADMIN ----------
 
 export const adminGetProducts = async (req, res) => {
-  const products = await Product.find().sort({ createdAt: -1 });
-  res.json(products);
+  try {
+    const { category, search } = req.query;
+    const filter = {};
+    if (category) filter.category = category;
+    if (search) {
+      const rx = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      filter.$or = [{ title: rx }, { category: rx }];
+    }
+    const { page, limit, skip } = getPagination(req, { limit: 10, maxLimit: 10000 });
+    const [products, total] = await Promise.all([
+      Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Product.countDocuments(filter),
+    ]);
+    res.json(paginated(products, total, page, limit));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const adminGetProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 export const createProduct = async (req, res) => {

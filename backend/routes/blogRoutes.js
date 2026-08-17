@@ -4,6 +4,7 @@ import {
   getBlogBySlug,
   getBlogCategories,
   adminGetBlogs,
+  adminGetBlogById,
   createBlog,
   updateBlog,
   deleteBlog,
@@ -19,6 +20,7 @@ router.get("/categories", getBlogCategories);
 router.get("/:slug", getBlogBySlug);
 
 router.get("/admin/all", protectAdmin, adminGetBlogs);
+router.get("/admin/:id", protectAdmin, adminGetBlogById);
 router.post("/admin", protectAdmin, uploadImage.single("coverImage"), createBlog);
 router.put("/admin/:id", protectAdmin, uploadImage.single("coverImage"), updateBlog);
 router.delete("/admin/:id", protectAdmin, deleteBlog);
