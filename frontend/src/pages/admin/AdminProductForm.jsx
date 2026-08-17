@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios.js";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 export default function AdminProductForm() {
   const { id } = useParams();
@@ -17,7 +18,7 @@ export default function AdminProductForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  useOnceEffect(() => {
     if (isEdit) {
       api.get(`/products/admin/${id}`).then((res) => {
         const product = res.data;

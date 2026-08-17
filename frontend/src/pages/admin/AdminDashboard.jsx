@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import ProductTitleLink from "../../components/ProductTitleLink.jsx";
@@ -6,8 +6,13 @@ import ProductTitleLink from "../../components/ProductTitleLink.jsx";
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const fetchedRef = useRef(false);
 
+  // React 18 StrictMode double-invokes effects in dev — guard so the stats
+  // endpoint is only hit once per mount.
   useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
     api
       .get("/admin/stats")
       .then((res) => setStats(res.data))

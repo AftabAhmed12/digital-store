@@ -11,20 +11,16 @@ import {
   deleteProduct,
   downloadProductFile,
 } from "../controllers/productController.js";
-import { protectAdmin } from "../middleware/auth.js";
+import { protectAdmin, requireAccess } from "../middleware/auth.js";
 import multer from "multer";
-import { CloudinaryStorage } from "multer-storage-cloudinary";
-import cloudinary from "../config/cloudinary.js";
+import cloudinaryStorage from "../middleware/cloudinaryStorage.js";
 
 // Combined upload for gallery images (public, multiple) + digital file (private/raw)
-const combinedStorage = new CloudinaryStorage({
-  cloudinary,
-  params: (req, file) => {
-    if (file.fieldname === "digitalFile") {
-      return { folder: "digital-store/products", resource_type: "raw" };
-    }
-    return { folder: "digital-store/images", allowed_formats: ["jpg", "jpeg", "png", "webp"] };
-  },
+const combinedStorage = cloudinaryStorage((req, file) => {
+  if (file.fieldname === "digitalFile") {
+    return { folder: "digital-store/products", resource_type: "raw" };
+  }
+  return { folder: "digital-store/images", allowed_formats: ["jpg", "jpeg", "png", "webp"] };
 });
 
 // Up to 6 gallery images per product
@@ -43,10 +39,10 @@ router.get("/:id/download", downloadProductFile);
 router.get("/:slug", getProductBySlug);
 
 // Admin
-router.get("/admin/all", protectAdmin, adminGetProducts);
-router.get("/admin/:id", protectAdmin, adminGetProductById);
-router.post("/admin", protectAdmin, uploadProductFiles, createProduct);
-router.put("/admin/:id", protectAdmin, uploadProductFiles, updateProduct);
-router.delete("/admin/:id", protectAdmin, deleteProduct);
+router.get("/admin/all", protectAdmin, requireAccess("products"), adminGetProducts);
+router.get("/admin/:id", protectAdmin, requireAccess("products"), adminGetProductById);
+router.post("/admin", protectAdmin, requireAccess("products", "create"), uploadProductFiles, createProduct);
+router.put("/admin/:id", protectAdmin, requireAccess("products", "edit"), uploadProductFiles, updateProduct);
+router.delete("/admin/:id", protectAdmin, requireAccess("products", "delete"), deleteProduct);
 
 export default router;

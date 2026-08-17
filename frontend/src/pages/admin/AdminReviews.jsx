@@ -5,6 +5,8 @@ import Modal from "../../components/Modal.jsx";
 import ProductTitleLink from "../../components/ProductTitleLink.jsx";
 import { Stars } from "../../components/ProductReviews.jsx";
 import Pagination from "../../components/Pagination.jsx";
+import { canAccess } from "../../utils/adminAccess.js";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 const PAGE_SIZE = 10;
 
@@ -158,19 +160,21 @@ function ReviewDetail({ review, open, onClose, onApprove, onReject, onDelete }) 
           </p>
 
           <div className="flex flex-wrap gap-3">
-            {review.status !== "approved" && (
+            {canAccess("reviews", "edit") && review.status !== "approved" && (
               <button onClick={() => onApprove(review._id)} className="bg-teal text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
                 Approve
               </button>
             )}
-            {review.status !== "rejected" && (
+            {canAccess("reviews", "edit") && review.status !== "rejected" && (
               <button onClick={() => onReject(review._id)} className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
                 Reject
               </button>
             )}
-            <button onClick={() => onDelete(review._id)} className="bg-red-500/10 text-red-400 border border-red-500/30 font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
-              Delete
-            </button>
+            {canAccess("reviews", "delete") && (
+              <button onClick={() => onDelete(review._id)} className="bg-red-500/10 text-red-400 border border-red-500/30 font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
+                Delete
+              </button>
+            )}
           </div>
         </>
       )}
@@ -206,17 +210,17 @@ export default function AdminReviews() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
+  useOnceEffect(() => {
     api.get("/products/categories").then((res) => setCategories(res.data));
   }, []);
 
   // Filters always reload from page 1; changing page only refetches that page.
-  useEffect(() => {
+  useOnceEffect(() => {
     setPage(1);
     load(1);
   }, [category, status, search]);
 
-  useEffect(() => {
+  useOnceEffect(() => {
     if (page !== 1) load(page);
   }, [page]);
 
@@ -328,10 +332,12 @@ export default function AdminReviews() {
                 <td className="p-4"><StatusBadge status={r.status} /></td>
                 <td className="p-4 text-right whitespace-nowrap space-x-3">
                   <button onClick={() => setDetail(r)} className="text-blue hover:underline">View</button>
-                  {r.status !== "approved" && (
+                  {canAccess("reviews", "edit") && r.status !== "approved" && (
                     <button onClick={() => handleApprove(r._id)} className="text-teal hover:underline">Approve</button>
                   )}
-                  <button onClick={() => handleDelete(r._id)} className="text-red-400 hover:underline">Delete</button>
+                  {canAccess("reviews", "delete") && (
+                    <button onClick={() => handleDelete(r._id)} className="text-red-400 hover:underline">Delete</button>
+                  )}
                 </td>
               </tr>
             ))}

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import ProductTitleLink from "../../components/ProductTitleLink.jsx";
 import Pagination from "../../components/Pagination.jsx";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 const PAGE_SIZE = 10;
 
@@ -13,7 +14,7 @@ export default function AdminAbandoned() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  useEffect(() => {
+  useOnceEffect(() => {
     setLoading(true);
     api
       .get("/orders/admin/cancelled", { params: { page, limit: PAGE_SIZE } })

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios.js";
+import { img } from "../utils/imageUrl.js";
 
 // Full-width promo banner shown under the navbar on every public page.
 // The poster is rendered object-contain inside a themed, rounded panel with
@@ -64,7 +65,7 @@ export default function CampaignBanner() {
               {c.posterImage?.url ? (
                 <div className="relative bg-surface2">
                   <img
-                    src={c.posterImage.url}
+                    src={img(c.posterImage.url, 1600)}
                     alt={c.title}
                     loading="eager"
                     className="w-full h-48 sm:h-64 md:h-72 lg:h-80 object-contain"

@@ -6,7 +6,7 @@ import {
   updateCampaign,
   deleteCampaign,
 } from "../controllers/campaignController.js";
-import { protectAdmin } from "../middleware/auth.js";
+import { protectAdmin, requireAccess } from "../middleware/auth.js";
 import { uploadImage } from "../middleware/upload.js";
 
 const router = express.Router();
@@ -15,9 +15,9 @@ const router = express.Router();
 router.get("/active", getActiveCampaigns);
 
 // Admin
-router.get("/admin/all", protectAdmin, adminGetCampaigns);
-router.post("/admin", protectAdmin, uploadImage.single("posterImage"), createCampaign);
-router.put("/admin/:id", protectAdmin, uploadImage.single("posterImage"), updateCampaign);
-router.delete("/admin/:id", protectAdmin, deleteCampaign);
+router.get("/admin/all", protectAdmin, requireAccess("campaigns"), adminGetCampaigns);
+router.post("/admin", protectAdmin, requireAccess("campaigns", "create"), uploadImage.single("posterImage"), createCampaign);
+router.put("/admin/:id", protectAdmin, requireAccess("campaigns", "edit"), uploadImage.single("posterImage"), updateCampaign);
+router.delete("/admin/:id", protectAdmin, requireAccess("campaigns", "delete"), deleteCampaign);
 
 export default router;

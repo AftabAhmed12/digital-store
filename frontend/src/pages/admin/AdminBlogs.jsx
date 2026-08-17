@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import CategoryFilter from "../../components/CategoryFilter.jsx";
 import Pagination from "../../components/Pagination.jsx";
+import { canAccess } from "../../utils/adminAccess.js";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 const PAGE_SIZE = 10;
 
@@ -32,17 +34,17 @@ export default function AdminBlogs() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
+  useOnceEffect(() => {
     api.get("/blogs/categories").then((res) => setCategories(res.data));
   }, []);
 
   // Filters always reload from page 1; changing page only refetches that page.
-  useEffect(() => {
+  useOnceEffect(() => {
     setPage(1);
     load(1);
   }, [category, search]);
 
-  useEffect(() => {
+  useOnceEffect(() => {
     if (page !== 1) load(page);
   }, [page]);
 
@@ -59,9 +61,11 @@ export default function AdminBlogs() {
     <div className="container-px py-10 max-w-6xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display font-700 text-2xl">Blog Posts</h1>
-        <Link to="/admin/blogs/new" className="bg-gold text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
-          + New Post
-        </Link>
+        {canAccess("blogs", "create") && (
+          <Link to="/admin/blogs/new" className="bg-gold text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
+            + New Post
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-3 mb-6 items-start">
@@ -99,8 +103,12 @@ export default function AdminBlogs() {
                 <td className="p-4">{b.isPublished ? "Yes" : "No"}</td>
                 <td className="p-4 text-text-faint">{new Date(b.createdAt).toLocaleDateString()}</td>
                 <td className="p-4 text-right whitespace-nowrap space-x-3">
-                  <Link to={`/admin/blogs/${b._id}/edit`} className="text-blue hover:underline">Edit</Link>
-                  <button onClick={() => handleDelete(b._id)} className="text-red-400 hover:underline">Delete</button>
+                  {canAccess("blogs", "edit") && (
+                    <Link to={`/admin/blogs/${b._id}/edit`} className="text-blue hover:underline">Edit</Link>
+                  )}
+                  {canAccess("blogs", "delete") && (
+                    <button onClick={() => handleDelete(b._id)} className="text-red-400 hover:underline">Delete</button>
+                  )}
                 </td>
               </tr>
             ))}

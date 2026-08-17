@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { lockScroll, unlockScroll } from "../utils/scrollLock.js";
+import { img } from "../utils/imageUrl.js";
 
 export default function ProductGallery({ images = [], title, autoSlideDelay = 4000 }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -60,10 +61,10 @@ export default function ProductGallery({ images = [], title, autoSlideDelay = 40
         className="relative group aspect-[4/3] rounded-xl overflow-hidden bg-surface2 border border-border mb-3 cursor-zoom-in"
         onClick={() => setPreviewOpen(true)}
       >
-        {images.map((img, i) => (
+        {images.map((image, i) => (
           <img
-            key={img.publicId || i}
-            src={img.url}
+            key={image.publicId || i}
+            src={img(image.url, 1200)}
             alt={`${title} preview ${i + 1}`}
             loading={i === 0 ? "eager" : "lazy"}
             decoding="async"
@@ -135,9 +136,9 @@ export default function ProductGallery({ images = [], title, autoSlideDelay = 40
 
       {images.length > 1 && (
         <div className="grid grid-cols-5 gap-2">
-          {images.map((img, i) => (
+          {images.map((image, i) => (
             <button
-              key={img.publicId || i}
+              key={image.publicId || i}
               onClick={() => {
                 setActiveIndex(i);
                 restartTimer();
@@ -146,7 +147,7 @@ export default function ProductGallery({ images = [], title, autoSlideDelay = 40
                 i === activeIndex ? "border-gold" : "border-border hover:border-teal"
               }`}
             >
-              <img src={img.url} alt={`${title} thumbnail ${i + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+              <img src={img(image.url, 200)} alt={`${title} thumbnail ${i + 1}`} loading="lazy" decoding="async" className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
@@ -173,10 +174,10 @@ export default function ProductGallery({ images = [], title, autoSlideDelay = 40
             </button>
 
             <div className="relative w-full h-[82vh] flex items-center justify-center bg-black/40 rounded-lg overflow-hidden">
-              {images.map((img, i) => (
+              {images.map((image, i) => (
                 <img
-                  key={img.publicId || i}
-                  src={img.url}
+                  key={image.publicId || i}
+                  src={img(image.url, 1400)}
                   alt={`${title} large preview ${i + 1}`}
                   loading="lazy"
                   decoding="async"

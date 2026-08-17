@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import CategoryFilter from "../../components/CategoryFilter.jsx";
 import Pagination from "../../components/Pagination.jsx";
+import { canAccess } from "../../utils/adminAccess.js";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 const PAGE_SIZE = 10;
 
@@ -33,17 +35,17 @@ export default function AdminProducts() {
   };
 
   // Categories now come from the API (not client-side) since the table is paginated.
-  useEffect(() => {
+  useOnceEffect(() => {
     api.get("/products/categories").then((res) => setCategories(res.data));
   }, []);
 
   // Filters always reload from page 1; changing page only refetches that page.
-  useEffect(() => {
+  useOnceEffect(() => {
     setPage(1);
     load(1);
   }, [category, search]);
 
-  useEffect(() => {
+  useOnceEffect(() => {
     if (page !== 1) load(page);
   }, [page]);
 
@@ -60,9 +62,11 @@ export default function AdminProducts() {
     <div className="container-px py-10 max-w-6xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display font-700 text-2xl">Products</h1>
-        <Link to="/admin/products/new" className="bg-gold text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
-          + New Product
-        </Link>
+        {canAccess("products", "create") && (
+          <Link to="/admin/products/new" className="bg-gold text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
+            + New Product
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-3 mb-6 items-start">
@@ -112,8 +116,12 @@ export default function AdminProducts() {
                 <td className="p-4">{p.salesCount}</td>
                 <td className="p-4">{p.isActive ? "Yes" : "No"}</td>
                 <td className="p-4 text-right whitespace-nowrap space-x-3">
-                  <Link to={`/admin/products/${p._id}/edit`} className="text-blue hover:underline">Edit</Link>
-                  <button onClick={() => handleDelete(p._id)} className="text-red-400 hover:underline">Delete</button>
+                  {canAccess("products", "edit") && (
+                    <Link to={`/admin/products/${p._id}/edit`} className="text-blue hover:underline">Edit</Link>
+                  )}
+                  {canAccess("products", "delete") && (
+                    <button onClick={() => handleDelete(p._id)} className="text-red-400 hover:underline">Delete</button>
+                  )}
                 </td>
               </tr>
             ))}

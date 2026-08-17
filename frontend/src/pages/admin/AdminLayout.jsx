@@ -1,27 +1,63 @@
+import { useState } from "react";
 import { Link, NavLink, useNavigate, Outlet } from "react-router-dom";
 import ThemeToggle from "../../components/ThemeToggle.jsx";
+import api from "../../api/axios.js";
+import { canAccess, getAdminInfo } from "../../utils/adminAccess.js";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
-const links = [
-  { to: "/admin/dashboard", label: "Dashboard" },
-  { to: "/admin/products", label: "Products" },
-  { to: "/admin/coupons", label: "Coupons" },
-  { to: "/admin/campaigns", label: "Campaigns" },
-  { to: "/admin/blogs", label: "Blogs" },
-  { to: "/admin/orders", label: "Orders" },
-  { to: "/admin/reviews", label: "Reviews" },
-  { to: "/admin/cancelled", label: "Abandoned Checkouts" },
-  { to: "/admin/leads", label: "Chat Leads" },
+const allLinks = [
+  { to: "/admin/dashboard", label: "Dashboard", module: "dashboard" },
+  { to: "/admin/products", label: "Products", module: "products" },
+  { to: "/admin/coupons", label: "Coupons", module: "coupons" },
+  { to: "/admin/campaigns", label: "Campaigns", module: "campaigns" },
+  { to: "/admin/blogs", label: "Blogs", module: "blogs" },
+  { to: "/admin/orders", label: "Orders", module: "orders" },
+  { to: "/admin/reviews", label: "Reviews", module: "reviews" },
+  { to: "/admin/cancelled", label: "Abandoned Checkouts", module: "orders" },
+  { to: "/admin/leads", label: "Chat Leads", module: "leads" },
 ];
 
 export default function AdminLayout() {
   const navigate = useNavigate();
-  const adminName = localStorage.getItem("adminName");
+  const [info, setInfo] = useState(() => getAdminInfo());
+  const [adminName, setAdminName] = useState(() => localStorage.getItem("adminName"));
+  const [syncing, setSyncing] = useState(true);
+
+  // Re-sync role/permissions from the server on mount. This fixes stale
+  // localStorage from an earlier login (e.g. before a role change), so the
+  // sidebar always reflects the current database role.
+  useOnceEffect(() => {
+    api
+      .get("/admin/profile")
+      .then((res) => {
+        if (res.data?.email) {
+          const fresh = { isSuperAdmin: res.data.isSuperAdmin, permissions: res.data.permissions };
+          localStorage.setItem("adminInfo", JSON.stringify(fresh));
+          localStorage.setItem("adminName", res.data.name);
+          setInfo(fresh);
+          setAdminName(res.data.name);
+        }
+      })
+      .catch(() => {
+        // Invalid/expired token — kick back to the login screen.
+        logout();
+      })
+      .finally(() => setSyncing(false));
+  }, []);
 
   const logout = () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminName");
+    localStorage.removeItem("adminInfo");
     navigate("/admin/login");
   };
+
+  // Only show tabs the admin has access to; Admin Management appears for super admins only.
+  const isSuper = info?.isSuperAdmin;
+  const links = [
+    ...allLinks.filter((l) => canAccess(l.module)),
+    ...(isSuper ? [{ to: "/admin/admin-management", label: "Admin Management", module: "admin" }] : []),
+  ];
 
   return (
     <div className="min-h-screen flex">
@@ -45,9 +81,13 @@ export default function AdminLayout() {
               {l.label}
             </NavLink>
           ))}
+          {!syncing && links.length === 0 && (
+            <p className="px-3 py-2 text-xs text-text-faint">No modules assigned yet.</p>
+          )}
         </nav>
         <div className="border-t border-border pt-4">
-          <p className="text-xs text-text-faint mb-2">Signed in as {adminName}</p>
+          <p className="text-xs text-text-faint mb-1">Signed in as {adminName}</p>
+          {isSuper && <p className="text-[11px] text-gold mb-2 uppercase tracking-widest">Super Admin</p>}
           <button onClick={logout} className="text-sm text-red-400 hover:underline">Log out</button>
         </div>
       </aside>

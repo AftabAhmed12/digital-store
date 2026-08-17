@@ -6,8 +6,10 @@ const adminSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true },
+    isSuperAdmin: { type: Boolean, default: false },
+    permissions: { type: Object, default: {} },
   },
-  { timestamps: true }
+  { timestamps: true, minimize: false }
 );
 
 adminSchema.pre("save", async function (next) {

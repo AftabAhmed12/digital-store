@@ -6,7 +6,7 @@ import {
   updateCoupon,
   deleteCoupon,
 } from "../controllers/couponController.js";
-import { protectAdmin } from "../middleware/auth.js";
+import { protectAdmin, requireAccess } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -14,9 +14,9 @@ const router = express.Router();
 router.post("/validate", validateCoupon);
 
 // Admin
-router.get("/admin/all", protectAdmin, adminGetCoupons);
-router.post("/admin", protectAdmin, createCoupon);
-router.put("/admin/:id", protectAdmin, updateCoupon);
-router.delete("/admin/:id", protectAdmin, deleteCoupon);
+router.get("/admin/all", protectAdmin, requireAccess("coupons"), adminGetCoupons);
+router.post("/admin", protectAdmin, requireAccess("coupons", "create"), createCoupon);
+router.put("/admin/:id", protectAdmin, requireAccess("coupons", "edit"), updateCoupon);
+router.delete("/admin/:id", protectAdmin, requireAccess("coupons", "delete"), deleteCoupon);
 
 export default router;

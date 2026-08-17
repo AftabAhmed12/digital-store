@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import Pagination from "../../components/Pagination.jsx";
+import { canAccess } from "../../utils/adminAccess.js";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 const PAGE_SIZE = 10;
 
@@ -25,7 +27,7 @@ export default function AdminCampaigns() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, [page]);
+  useOnceEffect(load, [page]);
 
   const handleDelete = async (c) => {
     if (!confirm(`Delete campaign "${c.title}" and its coupon ${c.coupon?.code}? This cannot be undone.`)) return;
@@ -49,9 +51,11 @@ export default function AdminCampaigns() {
             Promo banners (e.g. Father&apos;s Day) shown full-width on the storefront. Each campaign owns a coupon code.
           </p>
         </div>
-        <Link to="/admin/campaigns/new" className="bg-gold text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
-          + New Campaign
-        </Link>
+        {canAccess("campaigns", "create") && (
+          <Link to="/admin/campaigns/new" className="bg-gold text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
+            + New Campaign
+          </Link>
+        )}
       </div>
 
       <div className="bg-surface border border-border rounded-xl overflow-hidden overflow-x-auto">
@@ -98,6 +102,7 @@ export default function AdminCampaigns() {
                 </td>
                 <td className="p-4">
                   <button
+                    disabled={!canAccess("campaigns", "edit")}
                     onClick={() => toggleActive(c)}
                     className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
                       c.isActive
@@ -109,8 +114,12 @@ export default function AdminCampaigns() {
                   </button>
                 </td>
                 <td className="p-4 text-right whitespace-nowrap space-x-3">
-                  <Link to={`/admin/campaigns/${c._id}/edit`} className="text-blue hover:underline">Edit</Link>
-                  <button onClick={() => handleDelete(c)} className="text-red-400 hover:underline">Delete</button>
+                  {canAccess("campaigns", "edit") && (
+                    <Link to={`/admin/campaigns/${c._id}/edit`} className="text-blue hover:underline">Edit</Link>
+                  )}
+                  {canAccess("campaigns", "delete") && (
+                    <button onClick={() => handleDelete(c)} className="text-red-400 hover:underline">Delete</button>
+                  )}
                 </td>
               </tr>
             ))}

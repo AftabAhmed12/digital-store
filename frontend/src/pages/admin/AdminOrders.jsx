@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import { StatusBadge } from "./AdminDashboard.jsx";
 import ProductTitleLink from "../../components/ProductTitleLink.jsx";
 import Pagination from "../../components/Pagination.jsx";
+import { canAccess } from "../../utils/adminAccess.js";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 const PAGE_SIZE = 10;
 
@@ -27,7 +29,7 @@ export default function AdminOrders() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, [page]);
+  useOnceEffect(load, [page]);
 
   const handleResend = async (id) => {
     setResending(id);
@@ -77,7 +79,7 @@ export default function AdminOrders() {
                 <td className="p-4"><StatusBadge status={o.status} /></td>
                 <td className="p-4 text-text-faint">{new Date(o.createdAt).toLocaleDateString()}</td>
                 <td className="p-4 text-right whitespace-nowrap">
-                  {o.status !== "pending" && (
+                  {o.status !== "pending" && canAccess("orders", "edit") && (
                     <button
                       onClick={() => handleResend(o._id)}
                       disabled={resending === o._id}

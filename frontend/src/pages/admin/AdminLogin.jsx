@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios.js";
 import ThemeToggle from "../../components/ThemeToggle.jsx";
+import { firstAccessibleRoute } from "../../utils/adminAccess.js";
 
 export default function AdminLogin() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -17,7 +18,13 @@ export default function AdminLogin() {
       const res = await api.post("/admin/login", form);
       localStorage.setItem("adminToken", res.data.token);
       localStorage.setItem("adminName", res.data.name);
-      navigate("/admin/dashboard");
+      localStorage.setItem(
+        "adminInfo",
+        JSON.stringify({ isSuperAdmin: res.data.isSuperAdmin, permissions: res.data.permissions })
+      );
+      // Super admins land on the dashboard (stats); everyone else goes to their
+      // first granted tab — the dashboard is super-admin only.
+      navigate(firstAccessibleRoute());
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {

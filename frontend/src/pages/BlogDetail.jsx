@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import api from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 import Seo from "../components/Seo.jsx";
+import { img } from "../utils/imageUrl.js";
 
 export default function BlogDetail() {
   const { slug } = useParams();
@@ -66,7 +67,7 @@ export default function BlogDetail() {
         By {blog.author} · {new Date(blog.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
       </p>
       {blog.coverImage?.url && (
-        <img src={blog.coverImage.url} alt={blog.title} loading="lazy" decoding="async" className="w-full rounded-xl mb-8 border border-border" />
+        <img src={img(blog.coverImage.url, 1200)} alt={blog.title} loading="lazy" decoding="async" className="w-full rounded-xl mb-8 border border-border" />
       )}
       <div
         className="prose prose-invert max-w-none text-text-muted leading-relaxed"

@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import Pagination from "../../components/Pagination.jsx";
+import { canAccess } from "../../utils/adminAccess.js";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 const fmtMoney = (v) => (Number(v) || 0).toFixed(2);
 
@@ -27,7 +29,7 @@ export default function AdminCoupons() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, [page]);
+  useOnceEffect(load, [page]);
 
   const handleDelete = async (c) => {
     if (!confirm(`Delete coupon ${c.code}? This cannot be undone.`)) return;
@@ -51,9 +53,11 @@ export default function AdminCoupons() {
             A coupon can apply to many products, and a product can have many coupons.
           </p>
         </div>
-        <Link to="/admin/coupons/new" className="bg-gold text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
-          + New Coupon
-        </Link>
+        {canAccess("coupons", "create") && (
+          <Link to="/admin/coupons/new" className="bg-gold text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
+            + New Coupon
+          </Link>
+        )}
       </div>
 
       <div className="bg-surface border border-border rounded-xl overflow-hidden overflow-x-auto">
@@ -98,6 +102,7 @@ export default function AdminCoupons() {
                 </td>
                 <td className="p-4">
                   <button
+                    disabled={!canAccess("coupons", "edit")}
                     onClick={() => toggleActive(c)}
                     className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
                       c.isActive
@@ -109,8 +114,12 @@ export default function AdminCoupons() {
                   </button>
                 </td>
                 <td className="p-4 text-right whitespace-nowrap space-x-3">
-                  <Link to={`/admin/coupons/${c._id}/edit`} className="text-blue hover:underline">Edit</Link>
-                  <button onClick={() => handleDelete(c)} className="text-red-400 hover:underline">Delete</button>
+                  {canAccess("coupons", "edit") && (
+                    <Link to={`/admin/coupons/${c._id}/edit`} className="text-blue hover:underline">Edit</Link>
+                  )}
+                  {canAccess("coupons", "delete") && (
+                    <button onClick={() => handleDelete(c)} className="text-red-400 hover:underline">Delete</button>
+                  )}
                 </td>
               </tr>
             ))}

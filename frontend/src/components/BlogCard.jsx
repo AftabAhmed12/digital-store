@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { img } from "../utils/imageUrl.js";
 
 export default function BlogCard({ blog, compact = false }) {
   return (
@@ -12,7 +13,7 @@ export default function BlogCard({ blog, compact = false }) {
       <div className="relative aspect-[16/9] overflow-hidden bg-surface2">
         {blog.coverImage?.url ? (
           <img
-            src={blog.coverImage.url}
+            src={img(blog.coverImage.url, 800)}
             alt={blog.title}
             loading="lazy"
             decoding="async"

@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 export default function AdminCouponForm() {
   const { id } = useParams();
@@ -17,7 +18,7 @@ export default function AdminCouponForm() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  useOnceEffect(() => {
     Promise.all([
       api.get("/products/admin/all", { params: { page: 1, limit: 10000 } }),
       isEdit ? api.get("/coupons/admin/all", { params: { page: 1, limit: 10000 } }) : Promise.resolve({ data: { data: [] } }),

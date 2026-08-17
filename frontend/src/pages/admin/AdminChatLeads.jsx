@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import api from "../../api/axios.js";
 import Loader from "../../components/Loader.jsx";
 import Pagination from "../../components/Pagination.jsx";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 const PAGE_SIZE = 10;
 
@@ -12,7 +13,7 @@ export default function AdminChatLeads() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  useEffect(() => {
+  useOnceEffect(() => {
     setLoading(true);
     api
       .get("/chat/admin/leads", { params: { page, limit: PAGE_SIZE } })

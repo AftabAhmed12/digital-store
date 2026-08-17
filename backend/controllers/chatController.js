@@ -361,8 +361,8 @@ export const chatMessage = async (req, res) => {
     const { email, message } = req.body;
     if (!email || !message) return res.status(400).json({ message: "Email and message are required" });
 
-    const products = await Product.find({ isActive: true }).select("title category price shortDescription description salesCount").lean();
-    const blogs = await Blog.find({ isPublished: true }).select("title category excerpt").lean();
+    const products = await Product.find({ isActive: true }).select("title category price shortDescription description salesCount").limit(100).lean();
+    const blogs = await Blog.find({ isPublished: true }).select("title category excerpt").limit(100).lean();
 
     let lead = await ChatLead.findOne({ email: email.toLowerCase() });
     if (!lead) {

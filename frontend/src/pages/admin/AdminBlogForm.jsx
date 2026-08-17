@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios.js";
 import RichTextEditor from "../../components/RichTextEditor.jsx";
+import useOnceEffect from "../../hooks/useOnceEffect.js";
 
 export default function AdminBlogForm() {
   const { id } = useParams();
@@ -15,7 +16,7 @@ export default function AdminBlogForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  useOnceEffect(() => {
     if (isEdit) {
       api.get(`/blogs/admin/${id}`).then((res) => {
         const blog = res.data;

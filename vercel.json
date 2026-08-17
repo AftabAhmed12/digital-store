@@ -18,6 +18,20 @@
       }
     },
     {
+      "source": "/sitemap.xml",
+      "destination": {
+        "type": "service",
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/robots.txt",
+      "destination": {
+        "type": "service",
+        "service": "backend"
+      }
+    },
+    {
       "source": "/(.*)",
       "destination": {
         "type": "service",

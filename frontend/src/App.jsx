@@ -1,11 +1,14 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import ChatWidget from "./components/ChatWidget.jsx";
 import CampaignBanner from "./components/CampaignBanner.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import ModuleRoute from "./components/ModuleRoute.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import Loader from "./components/Loader.jsx";
+import { firstAccessibleRoute } from "./utils/adminAccess.js";
 
 // Code-split every page so the initial bundle stays lean (faster LCP/Web Vitals).
 const Home = lazy(() => import("./pages/Home.jsx"));
@@ -34,6 +37,7 @@ const AdminOrders = lazy(() => import("./pages/admin/AdminOrders.jsx"));
 const AdminReviews = lazy(() => import("./pages/admin/AdminReviews.jsx"));
 const AdminAbandoned = lazy(() => import("./pages/admin/AdminAbandoned.jsx"));
 const AdminChatLeads = lazy(() => import("./pages/admin/AdminChatLeads.jsx"));
+const AdminManagement = lazy(() => import("./pages/admin/AdminManagement.jsx"));
 
 function PublicLayout({ children }) {
   return (
@@ -47,10 +51,24 @@ function PublicLayout({ children }) {
   );
 }
 
+// Fallback for /admin when the signed-in admin has no module access at all.
+function AdminLanding() {
+  if (firstAccessibleRoute() !== "/admin") return <Navigate to={firstAccessibleRoute()} replace />;
+  return (
+    <div className="container-px py-16 max-w-xl">
+      <h1 className="font-display font-700 text-2xl mb-3">No access assigned yet</h1>
+      <p className="text-text-muted">
+        You don&apos;t have access to any module. Ask a super admin to grant you permissions.
+      </p>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <Suspense fallback={<Loader />}>
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
         {/* Public site */}
         <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
         <Route path="/products" element={<PublicLayout><Products /></PublicLayout>} />
@@ -72,27 +90,156 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="products/new" element={<AdminProductForm />} />
-          <Route path="products/:id/edit" element={<AdminProductForm />} />
-          <Route path="coupons" element={<AdminCoupons />} />
-          <Route path="coupons/new" element={<AdminCouponForm />} />
-          <Route path="coupons/:id/edit" element={<AdminCouponForm />} />
-          <Route path="campaigns" element={<AdminCampaigns />} />
-          <Route path="campaigns/new" element={<AdminCampaignForm />} />
-          <Route path="campaigns/:id/edit" element={<AdminCampaignForm />} />
-          <Route path="blogs" element={<AdminBlogs />} />
-          <Route path="blogs/new" element={<AdminBlogForm />} />
-          <Route path="blogs/:id/edit" element={<AdminBlogForm />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="reviews" element={<AdminReviews />} />
-          <Route path="cancelled" element={<AdminAbandoned />} />
-          <Route path="leads" element={<AdminChatLeads />} />
+          <Route index element={<AdminLanding />} />
+          <Route
+            path="dashboard"
+            element={
+              <ModuleRoute module="dashboard">
+                <AdminDashboard />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="products"
+            element={
+              <ModuleRoute module="products">
+                <AdminProducts />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="products/new"
+            element={
+              <ModuleRoute module="products" action="create">
+                <AdminProductForm />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="products/:id/edit"
+            element={
+              <ModuleRoute module="products" action="edit">
+                <AdminProductForm />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="coupons"
+            element={
+              <ModuleRoute module="coupons">
+                <AdminCoupons />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="coupons/new"
+            element={
+              <ModuleRoute module="coupons" action="create">
+                <AdminCouponForm />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="coupons/:id/edit"
+            element={
+              <ModuleRoute module="coupons" action="edit">
+                <AdminCouponForm />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="campaigns"
+            element={
+              <ModuleRoute module="campaigns">
+                <AdminCampaigns />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="campaigns/new"
+            element={
+              <ModuleRoute module="campaigns" action="create">
+                <AdminCampaignForm />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="campaigns/:id/edit"
+            element={
+              <ModuleRoute module="campaigns" action="edit">
+                <AdminCampaignForm />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="blogs"
+            element={
+              <ModuleRoute module="blogs">
+                <AdminBlogs />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="blogs/new"
+            element={
+              <ModuleRoute module="blogs" action="create">
+                <AdminBlogForm />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="blogs/:id/edit"
+            element={
+              <ModuleRoute module="blogs" action="edit">
+                <AdminBlogForm />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="orders"
+            element={
+              <ModuleRoute module="orders">
+                <AdminOrders />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="reviews"
+            element={
+              <ModuleRoute module="reviews">
+                <AdminReviews />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="cancelled"
+            element={
+              <ModuleRoute module="orders">
+                <AdminAbandoned />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="leads"
+            element={
+              <ModuleRoute module="leads">
+                <AdminChatLeads />
+              </ModuleRoute>
+            }
+          />
+          <Route
+            path="admin-management"
+            element={
+              <ModuleRoute module="admin">
+                <AdminManagement />
+              </ModuleRoute>
+            }
+          />
         </Route>
 
         <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
-      </Routes>
+        </Routes>
+      </ErrorBoundary>
     </Suspense>
   );
 }

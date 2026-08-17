@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { img } from "../utils/imageUrl.js";
 
 // Signature element: product card styled like a digital "ticket stub" —
 // a perforated line separates the preview from the instant-delivery detail,
@@ -22,7 +23,7 @@ export default function ProductCard({ product, compact = false }) {
         )}
         {product.images?.[0]?.url ? (
           <img
-            src={product.images[0].url}
+            src={img(product.images[0].url, 800)}
             alt={product.title}
             loading="lazy"
             decoding="async"
