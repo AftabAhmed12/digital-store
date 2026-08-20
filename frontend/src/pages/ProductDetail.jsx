@@ -139,7 +139,7 @@ export default function ProductDetail() {
       <div>
         <Link
           to={`/products?category=${encodeURIComponent(product.category)}`}
-          className="text-xs uppercase tracking-widest text-teal mb-2 inline-block hover:underline hover:text-gold transition-colors"
+          className="text-xs uppercase tracking-widest text-teal mb-2 inline-block hover:text-gold transition-colors"
         >
           {product.category}
         </Link>
