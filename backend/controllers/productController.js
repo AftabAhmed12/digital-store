@@ -11,6 +11,25 @@ const isPdf = (file) => {
   return /\.pdf$/i.test(file.originalname || "") || file.mimetype === "application/pdf";
 };
 
+// Attach average rating + review count (approved reviews only) to a list of products.
+// Products are returned as plain objects so extra fields can be spread onto them.
+const attachRatings = async (products) => {
+  if (!products.length) return products;
+  const ratings = await Review.aggregate([
+    { $match: { status: "approved", product: { $in: products.map((p) => p._id) } } },
+    { $group: { _id: "$product", avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+  ]);
+  const ratingMap = new Map(ratings.map((r) => [String(r._id), r]));
+  return products.map((p) => {
+    const r = ratingMap.get(String(p._id));
+    return {
+      ...p.toObject(),
+      rating: r ? Math.round(r.avg * 10) / 10 : 0,
+      reviewCount: r ? r.count : 0,
+    };
+  });
+};
+
 // @desc Get active products (public) - supports ?category=, ?search=, ?page=, ?limit=
 export const getProducts = async (req, res) => {
   try {
@@ -28,7 +47,7 @@ export const getProducts = async (req, res) => {
         .limit(limit),
       Product.countDocuments(filter),
     ]);
-    res.json(paginated(products, total, page, limit));
+    res.json(paginated(await attachRatings(products), total, page, limit));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -41,7 +60,8 @@ export const getProductBySlug = async (req, res) => {
       "-digitalFile"
     );
     if (!product) return res.status(404).json({ message: "Product not found" });
-    res.json(product);
+    const [withRating] = await attachRatings([product]);
+    res.json(withRating);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -128,7 +148,7 @@ export const getRelatedProducts = async (req, res) => {
       .slice(0, 5)
       .map(({ p }) => p);
 
-    res.json(top);
+    res.json(await attachRatings(top));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

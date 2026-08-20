@@ -32,6 +32,22 @@ export default function ProductDetail() {
       .finally(() => setLoading(false));
   }, [slug]);
 
+  // Browsers restore this page from the back/forward cache (bfcache) when a
+  // user hits Back from Stripe Checkout without paying — the JS state comes
+  // back exactly as-is, so `submitting` stays stuck on "Redirecting to
+  // checkout..." forever. Reset it so the buy button works again.
+  useEffect(() => {
+    const onPageShow = (e) => {
+      if (e.persisted) {
+        setSubmitting(false);
+        setError("");
+        setCouponLoading(false);
+      }
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
   const seo = useMemo(() => {
     if (!product) return { title: null, description: null, image: null, jsonLd: null };
     const desc = (product.shortDescription || product.description || "").slice(0, 180);

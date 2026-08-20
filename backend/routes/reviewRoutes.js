@@ -4,6 +4,7 @@ import {
   getApprovedReviews,
   adminGetReviews,
   updateReviewStatus,
+  bulkApproveReviews,
   deleteReview,
 } from "../controllers/reviewController.js";
 import { protectAdmin, requireAccess } from "../middleware/auth.js";
@@ -16,6 +17,7 @@ router.get("/product/:productId", getApprovedReviews);
 
 // Admin
 router.get("/admin/all", protectAdmin, requireAccess("reviews"), adminGetReviews);
+router.put("/admin/approve-all", protectAdmin, requireAccess("reviews", "edit"), bulkApproveReviews);
 router.put("/admin/:id", protectAdmin, requireAccess("reviews", "edit"), updateReviewStatus);
 router.delete("/admin/:id", protectAdmin, requireAccess("reviews", "delete"), deleteReview);
 

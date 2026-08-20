@@ -7,11 +7,12 @@ export const getPagination = (req, { limit = 12, maxLimit = 100 } = {}) => {
 };
 
 // Wrap an array + total into the standard paginated envelope.
-export const paginated = (items, total, page, limit) => ({
+export const paginated = (items, total, page, limit, extra = {}) => ({
   data: items,
   total,
   page,
   limit,
   totalPages: Math.ceil(total / limit),
   hasMore: page * limit < total,
+  ...extra,
 });

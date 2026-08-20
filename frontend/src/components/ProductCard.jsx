@@ -1,6 +1,47 @@
 import { Link } from "react-router-dom";
 import { img } from "../utils/imageUrl.js";
 
+const STAR_PATH = "M12 2.5l2.9 5.88 6.49.94-4.7 4.58 1.11 6.46L12 17.4l-5.8 3.05 1.11-6.46-4.7-4.58 6.49-.94L12 2.5Z";
+
+// Display-only star row (no buttons — the card itself is a link). Supports half steps.
+function CardStars({ value, size }) {
+  return (
+    <span className="relative flex shrink-0">
+      {[1, 2, 3, 4, 5].map((n) => {
+        const pct = Math.max(0, Math.min(1, value - (n - 1))) * 100;
+        return (
+          <span key={n} className="relative block" style={{ width: size, height: size }}>
+            <svg
+              width={size}
+              height={size}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="rgb(var(--color-text-faint))"
+              strokeWidth="1.5"
+              className="absolute inset-0"
+            >
+              <path d={STAR_PATH} />
+            </svg>
+            <span className="absolute inset-0 overflow-hidden" style={{ width: `${pct}%` }}>
+              <svg
+                width={size}
+                height={size}
+                viewBox="0 0 24 24"
+                fill="rgb(var(--color-gold))"
+                stroke="rgb(var(--color-gold))"
+                strokeWidth="1.5"
+                className="absolute inset-0"
+              >
+                <path d={STAR_PATH} />
+              </svg>
+            </span>
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 // Signature element: product card styled like a digital "ticket stub" —
 // a perforated line separates the preview from the instant-delivery detail,
 // reinforcing that buying = instant email delivery, not a physical shipment.
@@ -9,6 +50,9 @@ export default function ProductCard({ product, compact = false }) {
   const hasDiscount = discountPercent > 0;
   const salePrice = hasDiscount ? product.price * (1 - discountPercent / 100) : product.price;
   const cur = product.currency?.toUpperCase() || "USD";
+  const rating = Number(product.rating) || 0;
+  const reviewCount = Number(product.reviewCount) || 0;
+  const starSize = compact ? 13 : 15;
 
   return (
     <Link
@@ -51,6 +95,16 @@ export default function ProductCard({ product, compact = false }) {
         >
           {product.title}
         </h3>
+        <div className="flex items-center gap-1.5 h-5 mb-2">
+          <CardStars value={rating} size={starSize} />
+          {reviewCount > 0 ? (
+            <span className="text-xs text-text-faint leading-none">
+              {rating.toFixed(1)} ({reviewCount})
+            </span>
+          ) : (
+            <span className="text-xs text-text-faint leading-none">No reviews yet</span>
+          )}
+        </div>
         {!compact && <p className="text-text-faint text-sm mb-4 line-clamp-2">{product.shortDescription}</p>}
         <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
           <div className="flex items-baseline gap-2">

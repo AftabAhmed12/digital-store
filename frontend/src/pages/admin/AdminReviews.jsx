@@ -160,7 +160,7 @@ function ReviewDetail({ review, open, onClose, onApprove, onReject, onDelete }) 
           </p>
 
           <div className="flex flex-wrap gap-3">
-            {canAccess("reviews", "edit") && review.status !== "approved" && (
+            {canAccess("reviews", "edit") && review.status === "pending" && (
               <button onClick={() => onApprove(review._id)} className="bg-teal text-ink font-semibold px-4 py-2 rounded-lg text-sm hover:brightness-110">
                 Approve
               </button>
@@ -193,6 +193,9 @@ export default function AdminReviews() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [bulkMsg, setBulkMsg] = useState("");
+  const [confirmApproveAll, setConfirmApproveAll] = useState(false);
 
   const load = (p = page) => {
     setLoading(true);
@@ -206,6 +209,7 @@ export default function AdminReviews() {
         setReviews(res.data.data);
         setTotal(res.data.total);
         setTotalPages(res.data.totalPages);
+        setPendingCount(res.data.pendingCount ?? 0);
       })
       .finally(() => setLoading(false));
   };
@@ -241,6 +245,26 @@ export default function AdminReviews() {
     await api.delete(`/reviews/admin/${id}`);
     setDetail(null);
     load();
+  };
+
+  const handleApproveAll = () => {
+    setConfirmApproveAll(true);
+  };
+
+  const runApproveAll = async () => {
+    setConfirmApproveAll(false);
+    try {
+      const params = {};
+      if (category) params.category = category;
+      if (status) params.status = status;
+      if (search.trim()) params.search = search.trim();
+      const res = await api.put("/reviews/admin/approve-all", null, { params });
+      setBulkMsg(res.data.message);
+      setPage(1);
+      load(1);
+    } catch (err) {
+      setBulkMsg(err.response?.data?.message || "Something went wrong");
+    }
   };
 
   return (
@@ -298,7 +322,20 @@ export default function AdminReviews() {
             </button>
           ))}
         </div>
+        {canAccess("reviews", "edit") && (
+          <button
+            onClick={handleApproveAll}
+            disabled={status === "approved" || status === "rejected" || pendingCount === 0}
+            title={pendingCount === 0 ? "No pending reviews to approve" : undefined}
+            className="md:ml-auto self-start bg-teal text-ink font-semibold px-4 py-2.5 rounded-lg text-sm whitespace-nowrap hover:brightness-110 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Approve all
+          </button>
+        )}
       </div>
+      {bulkMsg && (
+        <p className="text-sm text-teal mb-4 -mt-3">{bulkMsg}</p>
+      )}
 
       <div className="bg-surface border border-border rounded-xl overflow-hidden overflow-x-auto">
         {loading ? (
@@ -359,6 +396,38 @@ export default function AdminReviews() {
         onReject={async (id) => { await handleReject(id); }}
         onDelete={async (id) => { await handleDelete(id); }}
       />
+
+      <Modal open={confirmApproveAll} onClose={() => setConfirmApproveAll(false)} size="max-w-md">
+        <h3 className="font-display font-700 text-xl mb-2">Approve all reviews?</h3>
+        <p className="text-text-muted text-sm mb-6">
+          {(() => {
+            const scope = [
+              status ? `status "${status}"` : "",
+              category ? `category "${category}"` : "",
+              search.trim() ? `matching "${search.trim()}"` : "",
+            ]
+              .filter(Boolean)
+              .join(", ");
+            return scope
+              ? `This will approve every ${status || "pending"} review ${scope}.`
+              : "This will approve all pending reviews.";
+          })()}
+        </p>
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => setConfirmApproveAll(false)}
+            className="px-4 py-2.5 rounded-lg text-sm border border-border text-text-muted hover:border-teal transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={runApproveAll}
+            className="bg-teal text-ink font-semibold px-4 py-2.5 rounded-lg text-sm hover:brightness-110 transition"
+          >
+            Approve all
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }
