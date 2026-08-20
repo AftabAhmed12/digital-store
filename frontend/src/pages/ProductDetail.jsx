@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, lazy, Suspense } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import api from "../api/axios.js";
 import Loader from "../components/Loader.jsx";
 import ProductGallery from "../components/ProductGallery.jsx";
@@ -137,7 +137,12 @@ export default function ProductDetail() {
       <ProductGallery images={product.images} title={product.title} />
 
       <div>
-        <p className="text-xs uppercase tracking-widest text-teal mb-2">{product.category}</p>
+        <Link
+          to={`/products?category=${encodeURIComponent(product.category)}`}
+          className="text-xs uppercase tracking-widest text-teal mb-2 inline-block hover:underline hover:text-gold transition-colors"
+        >
+          {product.category}
+        </Link>
         <h1 className="font-display font-700 text-3xl md:text-4xl mb-4">{product.title}</h1>
 
         {product.description.length > 300 && (

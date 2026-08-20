@@ -179,13 +179,15 @@ export const fulfillOrder = async (session) => {
 
 export const adminGetOrders = async (req, res) => {
   const { page, limit, skip } = getPagination(req, { limit: 10 });
+  const filter = {};
+  if (req.query.status) filter.status = req.query.status;
   const [orders, total] = await Promise.all([
-    Order.find()
+    Order.find(filter)
       .populate("product", "title slug")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
-    Order.countDocuments(),
+    Order.countDocuments(filter),
   ]);
   res.json(paginated(orders, total, page, limit));
 };
