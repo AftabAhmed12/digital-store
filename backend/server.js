@@ -23,6 +23,9 @@ connectDB();
 
 const app = express();
 
+// Trust proxy (required behind reverse proxy like Railway/Render/Vercel)
+app.set("trust proxy", 1);
+
 // Security headers (CSP off: the frontend uses an inline theme script + inline styles)
 app.use(helmet({ contentSecurityPolicy: false }));
 

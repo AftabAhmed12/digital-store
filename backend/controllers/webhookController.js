@@ -15,15 +15,12 @@ export const stripeWebhook = async (req, res) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  res.json({ received: true });
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-    try {
-      await fulfillOrder(session);
-    } catch (err) {
+    fulfillOrder(session).catch((err) => {
       console.error("Order fulfillment error:", err.message);
-      // Return 200 anyway so Stripe doesn't endlessly retry; log for manual follow-up
-    }
+    });
   }
-
-  res.json({ received: true });
 };
